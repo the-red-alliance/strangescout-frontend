@@ -3,6 +3,7 @@ Shell component
 */
 
 import React from 'react';
+import { useHistory } from "react-router-dom";
 // for styles
 import { makeStyles } from '@material-ui/core/styles';
 // toolbar imports
@@ -31,6 +32,8 @@ const useStyles = makeStyles(theme => ({
 export function Shell(props) {
 	// import classes/styles
 	const classes = useStyles();
+	// history api for routing
+	const history = useHistory();
 	// state hook for user menu anchor element
 	const [menuAnchorEl, setMenuAnchorEl] = React.useState(null);
 	// boolean for menu state
@@ -82,15 +85,16 @@ export function Shell(props) {
 								onClose={handleClose}
 							>
 								{props.loggedin ?
-								<React.Fragment>
-									<MenuItem onClick={handleClose}>Profile</MenuItem>
-									<MenuItem onClick={handleClose}>My account</MenuItem>
-								</React.Fragment>
+								[
+									<MenuItem key={"profile"} onClick={handleClose}>Profile</MenuItem>,
+									<MenuItem key={"account"} onClick={handleClose}>My account</MenuItem>,
+									<MenuItem key={"logout"} onClick={handleClose}>Logout</MenuItem>
+								].map(item => item)
 								:
-								<React.Fragment>
-									<MenuItem onClick={handleClose}>Login</MenuItem>
-									<MenuItem onClick={handleClose}>Sign Up</MenuItem>
-								</React.Fragment>
+								[
+									<MenuItem key={"login"} onClick={() => {history.push('/login'); handleClose();}}>Login</MenuItem>,
+									<MenuItem key={"signup"} onClick={() => {history.push('/signup'); handleClose();}}>Sign Up</MenuItem>
+								].map(item => item)
 								}
 							</Menu>
 						</div>
