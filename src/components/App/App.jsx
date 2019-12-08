@@ -46,15 +46,9 @@ export function App() {
 					<Shell />
 					<div className={classes.view}>
 						<Switch>
-							<Route exact path="/login">
-								<Login />
-							</Route>
-							<Route exact path="/signup">
-								<SignUp />
-							</Route>
-							<Route>
-								<NotFound />
-							</Route>
+							<Route exact path="/login" component={Login} />
+							<Route exact path="/signup" component={SignUp} />
+							<Route component={NotFound} />
 						</Switch>
 					</div>
 				</Router>
