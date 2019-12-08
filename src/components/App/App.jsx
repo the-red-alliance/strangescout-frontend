@@ -5,11 +5,8 @@ App component
 import React from 'react';
 
 // routing imports
-import {
-	HashRouter as Router,
-	Switch,
-	Route
-} from "react-router-dom";
+import { HashRouter as Router } from "react-router-dom";
+import PageRouter from './PageRouter';
 
 // store imports
 import { Provider } from 'react-redux';
@@ -19,13 +16,6 @@ import { makeStyles } from '@material-ui/core/styles';
 
 // import the shell
 import Shell from '../Shell';
-
-// import not found page
-import NotFound from '../pages/NotFound';
-
-// import login and signup pages
-import Login from '../pages/Login';
-import SignUp from '../pages/SignUp';
 
 const useStyles = makeStyles(theme => ({
 	view: {
@@ -45,11 +35,7 @@ export function App() {
 				<Router>
 					<Shell />
 					<div className={classes.view}>
-						<Switch>
-							<Route exact path="/login" component={Login} />
-							<Route exact path="/signup" component={SignUp} />
-							<Route component={NotFound} />
-						</Switch>
+						<PageRouter />
 					</div>
 				</Router>
 			</div>
