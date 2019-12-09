@@ -1,7 +1,3 @@
-/*
-Shell component container
-*/
-
 import React from 'react';
 import { connect } from 'react-redux';
 

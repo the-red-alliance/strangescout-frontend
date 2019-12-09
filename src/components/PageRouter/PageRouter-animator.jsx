@@ -11,7 +11,6 @@ const RouteContainer = posed.div({
 });
 
 export function PageRouter(props) {
-	console.log(props)
 	return(
 		<PoseGroup>
 			<RouteContainer key={props.location.pathname}>

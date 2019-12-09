@@ -4,11 +4,11 @@ import React from 'react';
 import { Switch, Route } from "react-router-dom";
 
 // import not found page
-import NotFound from '../../pages/NotFound';
+import NotFound from '../pages/NotFound';
 
 // import login and signup pages
-import Login from '../../pages/Login';
-import SignUp from '../../pages/SignUp';
+import Login from '../pages/Login';
+import SignUp from '../pages/SignUp';
 
 export function PageRouter(props) {
 	return(

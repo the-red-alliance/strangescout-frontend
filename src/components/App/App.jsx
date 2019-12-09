@@ -1,12 +1,8 @@
-/*
-App component
-*/
-
 import React from 'react';
 
 // routing imports
 import { HashRouter as Router } from "react-router-dom";
-import PageRouter from './PageRouter';
+import PageRouter from '../PageRouter';
 
 // store imports
 import { Provider } from 'react-redux';
@@ -29,7 +25,6 @@ export function App() {
 	const classes = useStyles();
 
 	return (
-		
 		<Provider store={store}>
 			<div className="app">
 				<Router>
