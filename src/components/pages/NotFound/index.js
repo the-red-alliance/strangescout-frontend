@@ -1,2 +1,2 @@
-import { NotFound } from './NotFound-content';
+import NotFound from './NotFound-container';
 export default NotFound;
