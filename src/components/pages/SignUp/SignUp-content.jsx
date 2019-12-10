@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 // for styles
 import { makeStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
@@ -94,6 +95,11 @@ const useStyles = makeStyles(theme => ({
 		position: 'absolute',
 		bottom: -22,
 	},
+
+	spacer: {
+		display: 'flex',
+		flexGrow: 1,
+	},
 }));
 
 export function SignUp(props) {
@@ -175,7 +181,7 @@ export function SignUp(props) {
 							: ''}
 						</FormControl>
 
-						<FormControl className={clsx(classes.input, classes.codeInput)}>
+						<FormControl className={clsx(classes.input, classes.codeInput)} disabled={(props.code)}>
 							<InputLabel>Invite Code</InputLabel>
 							<Input
 							id="code"
@@ -195,6 +201,8 @@ export function SignUp(props) {
 					</div>
 				</CardContent>
 				<CardActions className={classes.cardActions}>
+					<Link to="/login">Already have an account?</Link>
+					<span className={classes.spacer} />
 					<Button variant={"contained"} color={"primary"} disabled={!validation.isValid}>Sign Up</Button>
 				</CardActions>
 			</Card>

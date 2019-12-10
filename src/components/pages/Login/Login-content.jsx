@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 // for styles
 import { makeStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
@@ -90,6 +91,11 @@ const useStyles = makeStyles(theme => ({
 		position: 'absolute',
 		bottom: -22,
 	},
+
+	spacer: {
+		display: 'flex',
+		flexGrow: 1,
+	},
 }));
 
 export function Login(props) {
@@ -172,6 +178,8 @@ export function Login(props) {
 					</div>
 				</CardContent>
 				<CardActions className={classes.cardActions}>
+					<Link to="/signup">Don't have an account?</Link>
+					<span className={classes.spacer} />
 					<Button variant={"contained"} color={"primary"} disabled={!validation.isValid}>Login</Button>
 				</CardActions>
 			</Card>

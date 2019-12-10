@@ -5,6 +5,8 @@ const user = {
 	session: {
 		_id: '',
 		email: '',
+		admin: false,
+		invite: false,
 		token: ''
 	},
 	

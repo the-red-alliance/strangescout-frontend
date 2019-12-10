@@ -15,22 +15,14 @@ export function createFailure(error) {
 	return { type: CREATE_FAILURE, error: error };
 };
 
+/**
+ * Create a new user
+ * @param {{}} user {email: 'email@domain.tld', password: 'password', code: 'invitecode'}
+ */
 export function createUser(user) {
 	return (dispatch, getState) => {
 		localStorage.removeItem('session');
 		dispatch(createBegin());
-
-		// don't use api in dev
-		if(process.env.NODE_ENV !== "production") {
-			let dummySession = {
-				_id: 'xxx',
-				email: user.email,
-				token: 'xxx'
-			};
-			localStorage.setItem('session', JSON.stringify(dummySession));
-			dispatch(createSuccess(dummySession));
-			return;
-		};
 
 		return apiCreateUser(user).then(session => {
 			localStorage.setItem('session', JSON.stringify(session));
@@ -71,19 +63,6 @@ export function loginUser(email, password) {
 		localStorage.removeItem('session');
 		dispatch(loginBegin());
 
-		// don't use api in dev
-		if(process.env.NODE_ENV !== "production") {
-			let dummySession = {
-				_id: 'xxx',
-				email: email,
-				memberships: [],
-				token: 'xxx'
-			};
-			localStorage.setItem('session', JSON.stringify(dummySession));
-			dispatch(loginSuccess(dummySession));
-			return;
-		};
-
 		return apiLoginUser(email, password).then(session => {
 			localStorage.setItem('session', JSON.stringify(session));
 			dispatch(loginSuccess(session));
@@ -106,17 +85,6 @@ export function loginUser(email, password) {
 // ----------------------------------------------------------------------------
 export function verifyLogin(token) {
 	return (dispatch, getState) => {
-
-		// don't use api in dev
-		if(process.env.NODE_ENV !== "production") {
-			let dummySession = localStorage.getItem('session');
-			if (dummySession) {
-				dispatch(loginSuccess(JSON.parse(dummySession)));
-			} else {
-				dispatch(loginFailure(null));
-			}
-			return;
-		};
 
 		localStorage.removeItem('session');
 		dispatch(loginBegin());
