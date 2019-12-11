@@ -2,30 +2,107 @@ import React from 'react';
 // for styles
 import { makeStyles } from '@material-ui/core/styles';
 // cards
-import { Card, CardContent } from '@material-ui/core';
+import { Card, CardHeader, CardContent } from '@material-ui/core';
+
+import { Button } from '@material-ui/core';
 
 // create styles
 const useStyles = makeStyles(theme => ({
 	root: {
 		display: 'flex',
-		alignItems: 'center',
 		justifyContent: 'center',
 	},
 	card: {
 		width: '90%',
 		maxWidth: '350px',
 	},
+	cardHeader: {
+		paddingBottom: '0px',
+		textAlign: 'center',
+	},
+
+	container: {
+		width: "100%",
+		display: "grid",
+		gridTemplateColumns: "1fr",
+		gridTemplateRows: props => {
+			const { admin, invite } = props;
+			let rows = '1fr 1fr';
+			if (admin) rows = rows + ' 1fr';
+			if (invite) rows = rows + ' 1fr';
+			return rows;
+		},
+		gridGap: "20px",
+	},
+	row1: {
+		gridRow: "1 / 2",
+		gridColumn: "1 / 2",
+		display: 'flex',
+		justifyContent: 'center',
+	},
+	row2: {
+		gridRow: "2 / 3",
+		gridColumn: "1 / 2",
+		display: 'flex',
+		justifyContent: 'center',
+	},
+	row3: {
+		gridRow: "3 / 4",
+		gridColumn: "1 / 2",
+		display: 'flex',
+		justifyContent: 'center',
+	},
+	row4: {
+		gridRow: "4 / 5",
+		gridColumn: "1 / 2",
+		display: 'flex',
+		justifyContent: 'center',
+	},
+
+	button: {
+		width: '90%',
+		maxWidth: '200px',
+		margin: '3px',
+	},
 }));
 
-export function Home() {
+export function Home(props) {
 	// import classes/styles
-	const classes = useStyles();
+	const classes = useStyles(props);
+
+	const { invite, admin } = props;
 
 	return (
 		<div className={classes.root}>
 			<Card className={classes.card}>
+				<CardHeader className={classes.cardHeader} title={"Welcome back!"} />
 				<CardContent>
-					
+					<div className={classes.container}>
+						<div className={classes.row1}>
+							<Button className={classes.button} variant="contained" color="primary">
+								Scout a Match
+							</Button>
+						</div>
+						<div className={classes.row2}>
+							<Button className={classes.button} variant="contained" color="primary">
+								View the Data
+							</Button>
+						</div>
+						{ invite &&
+							<div className={classes.row3}>
+								<Button className={classes.button} variant="contained">
+									Invite a User
+								</Button>
+							</div>
+						}
+						{ admin &&
+							<div className={props.invite ? classes.row4 : classes.row3}>
+								<Button className={classes.button} variant="contained" color="secondary">
+									Admin Panel
+								</Button>
+							</div>
+						}
+					</div>
 				</CardContent>
 			</Card>
 		</div>

@@ -15,7 +15,7 @@ function mapStateToProps(state) {
 
 function NotFoundContainer(props) {
 	// redirect to the login page if the user isn't logged in
-	if (!props.user.loggedin) return <Redirect to={"/login"} />;
+	if (process.env.production && !props.user.loggedin) return <Redirect to={"/login"} />;
 
 	return (
 		<NotFound />

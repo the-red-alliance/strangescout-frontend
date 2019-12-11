@@ -70,57 +70,62 @@ export function Shell(props) {
 			</List>
 		</React.Fragment>
 	);
-
+	
 	return (
 		<div className={classes.root}>
 			<AppBar position="static">
 				<Toolbar>
-					<IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu" onClick={menuButton()}>
+					<IconButton
+					edge="start"
+					className={classes.menuButton}
+					color="inherit"
+					aria-label="menu"
+					onClick={menuButton()}
+					>
 						<MenuIcon />
 					</IconButton>
 					<Typography variant="h5" className={classes.title}>
 						StrangeScout
 					</Typography>
-					
-						<div>
-							<IconButton
-								aria-label="account of current user"
-								aria-controls="menu-appbar"
-								aria-haspopup="true"
-								onClick={handleMenu}
-								color="inherit"
-							>
-								<AccountCircleIcon />
-							</IconButton>
-							<Menu
-								id="menu-appbar"
-								anchorEl={state.menuAnchorEl}
-								anchorOrigin={{
-									vertical: 'top',
-									horizontal: 'right',
-								}}
-								keepMounted
-								transformOrigin={{
-									vertical: 'top',
-									horizontal: 'right',
-								}}
-								open={menuOpen}
-								onClose={handleClose}
-							>
-								{props.loggedin ?
-								[
-									<MenuItem key={"profile"} onClick={handleClose}>Profile</MenuItem>,
-									<MenuItem key={"account"} onClick={handleClose}>My account</MenuItem>,
-									<MenuItem key={"logout"} onClick={handleClose}>Logout</MenuItem>
-								].map(item => item)
-								:
-								[
-									<MenuItem key={"login"} onClick={() => {history.push('/login'); handleClose();}}>Login</MenuItem>,
-									<MenuItem key={"signup"} onClick={() => {history.push('/signup'); handleClose();}}>Sign Up</MenuItem>
-								].map(item => item)
-								}
-							</Menu>
-						</div>
+					<div>
+						<IconButton
+						aria-label="account"
+						aria-controls="menu-appbar"
+						aria-haspopup="true"
+						onClick={handleMenu}
+						color="inherit"
+						>
+							<AccountCircleIcon />
+						</IconButton>
+						<Menu
+						id="menu-appbar"
+						anchorEl={state.menuAnchorEl}
+						anchorOrigin={{
+							vertical: 'top',
+							horizontal: 'right',
+						}}
+						keepMounted
+						transformOrigin={{
+							vertical: 'top',
+							horizontal: 'right',
+						}}
+						open={menuOpen}
+						onClose={handleClose}
+						>
+							{props.loggedin ?
+							[
+								<MenuItem key={"profile"} onClick={handleClose}>Profile</MenuItem>,
+								<MenuItem key={"account"} onClick={handleClose}>My account</MenuItem>,
+								<MenuItem key={"logout"} onClick={handleClose}>Logout</MenuItem>
+							].map(item => item)
+							:
+							[
+								<MenuItem key={"login"} onClick={() => {history.push('/login'); handleClose();}}>Login</MenuItem>,
+								<MenuItem key={"signup"} onClick={() => {history.push('/signup'); handleClose();}}>Sign Up</MenuItem>
+							].map(item => item)
+							}
+						</Menu>
+					</div>
 				</Toolbar>
 			</AppBar>
 			{/* menu drawer toggled by state */}
