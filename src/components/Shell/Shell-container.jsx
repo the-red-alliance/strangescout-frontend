@@ -4,6 +4,8 @@ import { connect } from 'react-redux';
 // import shell content
 import { Shell } from './Shell-content.jsx';
 
+import Notifications from './Notifications';
+
 // map user from store to prop
 function mapStateToProps(state) {
 	return {
@@ -14,7 +16,10 @@ function mapStateToProps(state) {
 function ShellContainer(props) {
 	// return shell content passing in loggedin prop
 	return (
-		<Shell loggedin={props.user.loggedin}/>
+		<React.Fragment>
+			<Notifications />
+			<Shell loggedin={props.user.loggedin}/>
+		</React.Fragment>
 	);
 };
 
