@@ -1,4 +1,4 @@
-import { apiCreateUser, apiLoginUser, apiCheckToken } from './api';
+import { get, post } from '../../utils/requests';
 
 // ----------------------------------------------------------------------------
 export const CREATE_BEGIN = 'CREATE_BEGIN';
@@ -20,24 +20,57 @@ export function createFailure(error) {
  * @param {{}} user {email: 'email@domain.tld', password: 'password', code: 'invitecode'}
  */
 export function createUser(user) {
-	return (dispatch, getState) => {
+	return (dispatch) => {
+		// clear the session from localstorage
 		localStorage.removeItem('session');
+		// begin login sequence
 		dispatch(createBegin());
 
-		return apiCreateUser(user).then(session => {
-			localStorage.setItem('session', JSON.stringify(session));
-			dispatch(createSuccess(session));
-		}).catch((err) => {
-			console.error(`create status code: ${err}`);
-			if (err === 409) {
-				dispatch(createFailure('Username already exists!'));
-			} else if (err === 422) {
+		// new post request
+		return post(
+			// set url to request
+			window.origin + '/api/users',
+			// set request body to the user object
+			JSON.stringify(user),
+			// no token used here
+			null,
+			// headers array (specify content type as json)
+			[{name: 'Content-type', value: 'application/json'}]
+		).then((result) => {
+			// on a 200 code
+			if (result.status === 200) {
+				try {
+					// try parsing the response
+					let session = JSON.parse(result.response);
+
+					// set session into local storage
+					localStorage.setItem('session', JSON.stringify(session));
+					// dispatch the success event
+					dispatch(createSuccess(session));
+				} catch {
+					// if we fail to parse fail the login sequence with an error message
+					dispatch(createFailure('Error verifying login!'));
+				}
+			} else if (result.status === 422) {
+				// a 422 code is missing required fields in the payload
 				dispatch(createFailure('Missing required fields!'));
-			} else if (err === 401) {
-				dispatch(loginFailure('Username or password is invalid!'));
+			} else if (result.status === 409) {
+				// if we get a 409 code the user already exists
+				dispatch(createFailure('Username already exists!'));
+			} else if (result.status === 403) {
+				// if we get a 403 code the invite can't be used by this user
+				dispatch(createFailure('Invite code is restricted!'));
+			} else if (result.status === 440) {
+				// if we get a 440 code the invite is expired
+				dispatch(createFailure('Invite code is expired!'));
 			} else {
-				dispatch(loginFailure('Error verifying login!'));
-			};
+				// else just fail
+				console.error('failed to create account');
+				console.error(result);
+				dispatch(createFailure('Error creating the account!'));
+			}
+		}).catch(() => {
+			dispatch(createFailure(null));
 		});
 	};
 };
@@ -59,24 +92,39 @@ export function loginFailure(error) {
 };
 
 export function loginUser(email, password) {
-	return (dispatch, getState) => {
+	return (dispatch) => {
 		localStorage.removeItem('session');
 		dispatch(loginBegin());
 
-		return apiLoginUser(email, password).then(session => {
-			localStorage.setItem('session', JSON.stringify(session));
-			dispatch(loginSuccess(session));
-		}).catch((err) => {
-			console.error(`login status code: ${err}`);
-			if (err === 404) {
+		return post(
+			window.origin + '/api/users/session',
+			JSON.stringify({
+				email: email,
+				password: password
+			}),
+			null,
+			[{name: 'Content-type', value: 'application/json'}]
+		).then((result) => {
+			if (result.status === 200) {
+				try {
+					let session = JSON.parse(result.response);
+
+					localStorage.setItem('session', JSON.stringify(session));
+					dispatch(loginSuccess(session));
+				} catch {
+					dispatch(loginFailure('Error verifying login!'));
+				}
+			} else if (result.status === 404) {
 				dispatch(loginFailure('User not found!'));
-			} else if (err === 422) {
+			} else if (result.status === 422) {
 				dispatch(loginFailure('Missing required fields!'));
-			} else if (err === 401) {
+			} else if (result.status === 401) {
 				dispatch(loginFailure('Username or password is invalid!'));
 			} else {
 				dispatch(loginFailure('Error verifying login!'));
 			};
+		}).catch(() => {
+			dispatch(loginFailure(null));
 		});
 	};
 };
@@ -84,22 +132,33 @@ export function loginUser(email, password) {
 
 // ----------------------------------------------------------------------------
 export function verifyLogin(token) {
-	return (dispatch, getState) => {
-
+	return (dispatch) => {
 		localStorage.removeItem('session');
 		dispatch(loginBegin());
-		return apiCheckToken(token).then(session => {
-			localStorage.setItem('session', JSON.stringify(session));
-			dispatch(loginSuccess(session));
-		}).catch((err) => {
-			console.error(`verify status code: ${err}`);
-			if (err === 'expired') {
-				dispatch(loginFailure(null));
-			} else if (err === 404) {
+
+		return get(
+			window.origin + '/api/users/session',
+			token,
+			[{name: 'Content-type', value: 'application/json'}]
+		).then((result) => {
+			if (result.status === 200) {
+				try {
+					let session = JSON.parse(result.response);
+
+					localStorage.setItem('session', JSON.stringify(session));
+					dispatch(loginSuccess(session));
+				} catch {
+					dispatch(loginFailure('Error verifying login!'));
+				}
+			} else if (result.status === 404) {
 				dispatch(loginFailure('User not found!'));
+			} else if (result.response.toString().includes('jwt expired')) {
+				dispatch(loginFailure(null));
 			} else {
 				dispatch(loginFailure('Error verifying login!'));
-			};
+			}
+		}).catch(() => {
+			dispatch(loginFailure(null));
 		});
 	};
 };
