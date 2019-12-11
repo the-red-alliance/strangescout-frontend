@@ -107,9 +107,11 @@ export function SignUp(props) {
 	const classes = useStyles();
 
 	const initialState = {
-		email: '',
-		password: '',
-		code: props.code ? props.code : '',
+		newUser: {
+			email: '',
+			password: '',
+			code: props.code ? props.code : '',
+		},
 		// track what fields have been touched
 		touched: {},
 
@@ -118,18 +120,18 @@ export function SignUp(props) {
 	const [state, setState] = useState(initialState);
 
 	// generate validation object from validators
-	const validation = validator.validate(state);
+	const validation = validator.validate(state.newUser);
 
 	// update fields in state
 	const handleChange = prop => event => {
-		setState({ ...state, [prop]: event.target.value, touched: { ...state.touched, [prop]: true } });
+		setState({ ...state, newUser: {...state.newUser, [prop]: event.target.value}, touched: { ...state.touched, [prop]: true } });
 	};
 
 	// toggle password visibility in state
 	const handleClickShowPassword = () => {
 		setState({ ...state, showPassword: !state.showPassword });
 	};
-
+	
 	return (
 		<div className={classes.root}>
 			<Card className={classes.card}>
@@ -141,7 +143,7 @@ export function SignUp(props) {
 							<Input
 							id="email"
 							type="text"
-							value={state.email}
+							value={state.newUser.email}
 							onChange={handleChange('email') /* triger handleChange fn from parent */}
 							/>
 							{/* if `username` is present in the touched object:
@@ -159,7 +161,7 @@ export function SignUp(props) {
 							<Input
 							id="password"
 							type={state.showPassword ? 'text' : 'password' /* if `showPassword` this is a text field, else an obscured password field */}
-							value={state.password}
+							value={state.newUser.password}
 							onChange={handleChange('password')}
 							endAdornment={
 								<InputAdornment position="end">
@@ -186,7 +188,7 @@ export function SignUp(props) {
 							<Input
 							id="code"
 							type="text"
-							value={state.code}
+							value={state.newUser.code}
 							onChange={handleChange('code') /* triger handleChange fn from parent */}
 							/>
 							{/* if `code` is present in the touched object:
@@ -203,7 +205,14 @@ export function SignUp(props) {
 				<CardActions className={classes.cardActions}>
 					<Link to="/login">Already have an account?</Link>
 					<span className={classes.spacer} />
-					<Button variant={"contained"} color={"primary"} disabled={!validation.isValid}>Sign Up</Button>
+					<Button
+					variant={"contained"}
+					color={"primary"}
+					disabled={!validation.isValid}
+					onClick={() => {props.createAction(state.newUser)}}
+					>
+						Sign Up
+					</Button>
 				</CardActions>
 			</Card>
 		</div>

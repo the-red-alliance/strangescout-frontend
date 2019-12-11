@@ -39,12 +39,6 @@ const validator = new formValidator([
 		validWhen: false,
 		message: 'Password is required'
 	},
-	{
-		field: 'code',
-		method: 'isEmpty',
-		validWhen: false,
-		message: 'Invite code is required'
-	},
 ]);
 
 // create styles
@@ -103,8 +97,10 @@ export function Login(props) {
 	const classes = useStyles();
 
 	const initialState = {
-		email: '',
-		password: '',
+		user: {
+			email: '',
+			password: '',
+		},
 		// track what fields have been touched
 		touched: {},
 
@@ -113,11 +109,11 @@ export function Login(props) {
 	const [state, setState] = useState(initialState);
 
 	// generate validation object from validators
-	const validation = validator.validate(state);
+	const validation = validator.validate(state.user);
 
 	// update fields in state
 	const handleChange = prop => event => {
-		setState({ ...state, [prop]: event.target.value, touched: { ...state.touched, [prop]: true } });
+		setState({ ...state, user: {...state.user, [prop]: event.target.value}, touched: { ...state.touched, [prop]: true } });
 	};
 
 	// toggle password visibility in state
@@ -136,7 +132,7 @@ export function Login(props) {
 							<Input
 							id="email"
 							type="text"
-							value={state.email}
+							value={state.user.email}
 							onChange={handleChange('email') /* triger handleChange fn from parent */}
 							/>
 							{/* if `username` is present in the touched object:
@@ -154,7 +150,7 @@ export function Login(props) {
 							<Input
 							id="password"
 							type={state.showPassword ? 'text' : 'password' /* if `showPassword` this is a text field, else an obscured password field */}
-							value={state.password}
+							value={state.user.password}
 							onChange={handleChange('password')}
 							endAdornment={
 								<InputAdornment position="end">
@@ -180,7 +176,14 @@ export function Login(props) {
 				<CardActions className={classes.cardActions}>
 					<Link to="/signup">Don't have an account?</Link>
 					<span className={classes.spacer} />
-					<Button variant={"contained"} color={"primary"} disabled={!validation.isValid}>Login</Button>
+					<Button
+					variant={"contained"}
+					color={"primary"}
+					disabled={!validation.isValid}
+					onClick={() => {props.loginAction(state.user)}}
+					>
+						Login
+					</Button>
 				</CardActions>
 			</Card>
 		</div>

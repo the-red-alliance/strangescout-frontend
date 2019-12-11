@@ -6,6 +6,8 @@ import { useLocation } from "react-router-dom";
 // import login content
 import { SignUp } from './SignUp-content.jsx';
 
+import { createUser } from '../../../store/user/actions';
+
 function useQuery() {
 	return new URLSearchParams(useLocation().search);
 };
@@ -18,8 +20,12 @@ function mapStateToProps(state) {
 function SignUpContainer(props) {
 	const query = useQuery();
 
+	function create(user) {
+		props.dispatch(createUser(user));
+	};
+
 	return (
-		<SignUp code={query.get("code")} />
+		<SignUp code={query.get("code")} createAction={create} />
 	);
 };
 
