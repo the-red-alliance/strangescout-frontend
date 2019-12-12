@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { useLocation } from "react-router-dom";
+import { useLocation, useHistory } from "react-router-dom";
 
 // import login content
 import { SignUp } from './SignUp-content.jsx';
@@ -19,9 +19,14 @@ function mapStateToProps(state) {
 
 function SignUpContainer(props) {
 	const query = useQuery();
+	const history = useHistory();
+
+	const callback = () => {
+		history.push('/');
+	};
 
 	function create(user) {
-		props.dispatch(createUser(user));
+		props.dispatch(createUser(user, callback));
 	};
 
 	return (

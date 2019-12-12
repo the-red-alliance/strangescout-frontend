@@ -1,5 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 
 // import login content
 import { Login } from './Login-content.jsx';
@@ -12,8 +13,14 @@ function mapStateToProps(state) {
 };
 
 function LoginContainer(props) {
+	const history = useHistory();
+
+	const callback = () => {
+		history.push('/');
+	};
+
 	function login(user) {
-		props.dispatch(loginUser(user.email, user.password));
+		props.dispatch(loginUser(user.email, user.password, callback));
 	};
 
 	return (

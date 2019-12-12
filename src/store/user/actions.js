@@ -19,7 +19,7 @@ export function createFailure(error) {
  * Create a new user
  * @param {{}} user {email: 'email@domain.tld', password: 'password', code: 'invitecode'}
  */
-export function createUser(user) {
+export function createUser(user, callback) {
 	return (dispatch) => {
 		// clear the session from localstorage
 		localStorage.removeItem('session');
@@ -47,6 +47,7 @@ export function createUser(user) {
 					localStorage.setItem('session', JSON.stringify(session));
 					// dispatch the success event
 					dispatch(createSuccess(session));
+					if (callback) callback();
 				} catch {
 					// if we fail to parse fail the login sequence with an error message
 					dispatch(createFailure('Error verifying login!'));
@@ -91,7 +92,7 @@ export function loginFailure(error) {
 	return { type: LOG_IN_FAILURE, error: error };
 };
 
-export function loginUser(email, password) {
+export function loginUser(email, password, callback) {
 	return (dispatch) => {
 		localStorage.removeItem('session');
 		dispatch(loginBegin());
@@ -111,6 +112,7 @@ export function loginUser(email, password) {
 
 					localStorage.setItem('session', JSON.stringify(session));
 					dispatch(loginSuccess(session));
+					if (callback) callback();
 				} catch {
 					dispatch(loginFailure('Error verifying login!'));
 				}
@@ -131,7 +133,7 @@ export function loginUser(email, password) {
 // ----------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------
-export function verifyLogin(token) {
+export function verifyLogin(token, callback) {
 	return (dispatch) => {
 		localStorage.removeItem('session');
 		dispatch(loginBegin());
@@ -147,6 +149,7 @@ export function verifyLogin(token) {
 
 					localStorage.setItem('session', JSON.stringify(session));
 					dispatch(loginSuccess(session));
+					if (callback) callback();
 				} catch {
 					dispatch(loginFailure('Error verifying login!'));
 				}
