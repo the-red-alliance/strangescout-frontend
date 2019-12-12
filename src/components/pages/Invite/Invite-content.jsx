@@ -57,8 +57,8 @@ const useStyles = makeStyles(theme => ({
 		display: "grid",
 		gridTemplateColumns: "1fr",
 		gridTemplateRows: props => {
-			let rows = "1fr 1fr 1fr";
-			if (props.state.single) rows = rows + ' 1fr';
+			let rows = "1fr 1fr 1fr 1fr";
+			if (props.single) rows = rows + ' 1fr';
 			if (props.props.admin) rows = rows + ' 1fr';
 			if (props.expires) rows = rows + ' 1fr';
 			return rows;
@@ -90,6 +90,10 @@ const useStyles = makeStyles(theme => ({
 		gridRow: "6 / 7",
 		gridColumn: "1 / 2",
 	},
+	row7: {
+		gridRow: "7 / 8",
+		gridColumn: "1 / 2",
+	},
 
 	input: {
 		marginBottom: '10px',
@@ -111,9 +115,10 @@ export function Invite(props) {
 	};
 	const [state, setState] = useState(initialState);
 	const [expires, setExpires] = useState(false);
+	const [single, setSingle] = useState(false);
 
 	// import classes/styles
-	const classes = useStyles({props: props, state: state, expires: expires});
+	const classes = useStyles({props: props, state: state, expires: expires, single: single});
 
 	// generate validation object from validators
 	const validation = validator.validate(state);
@@ -124,7 +129,11 @@ export function Invite(props) {
 	};
 
 	const toggleChecked = key => {
-		setState({ ...state, [key]: !state[key] })
+		setState({ ...state, [key]: !state[key] });
+	};
+
+	const toggleSingle = () => {
+		setSingle(!single);
 	};
 
 	const toggleExpires = () => {
@@ -144,10 +153,10 @@ export function Invite(props) {
 				<CardContent>
 					<div className={classes.container}>
 						<FormControlLabel className={clsx(classes.row1)}
-						control={<Checkbox checked={state.single} onChange={() => {toggleChecked('single')}} />}
+						control={<Checkbox checked={single} onChange={() => {toggleSingle()}} />}
 						label="Invite a single user"
 						/>
-						{ state.single &&
+						{ single &&
 							<FormControl className={clsx(classes.row2, classes.input)}>
 								<InputLabel>Invited Email</InputLabel>
 								<Input
@@ -166,12 +175,12 @@ export function Invite(props) {
 								: ''}
 							</FormControl>
 						}
-						<FormControlLabel className={clsx(state.single ? classes.row3 : classes.row2)}
+						<FormControlLabel className={clsx(single ? classes.row3 : classes.row2)}
 						control={<Checkbox checked={state.invite} onChange={() => {toggleChecked('invite')}} />}
 						label="Invited user can invite new users"
 						/>
 						{ props.admin &&
-							<FormControlLabel className={clsx(state.single ? classes.row4 : classes.row3)}
+							<FormControlLabel className={clsx(single ? classes.row4 : classes.row3)}
 							control={<Checkbox checked={state.admin} onChange={() => {toggleChecked('admin')}} />}
 							label="Invited user is an admin"
 							/>
@@ -183,6 +192,16 @@ export function Invite(props) {
 							if (state.single) index = index + 1;
 							return classes['row'+index];
 						})}
+						control={<Checkbox checked={state.single} onChange={() => {toggleChecked('single')}} />}
+						label="Invite is single-use"
+						/>
+						<FormControlLabel
+						className={clsx(() => {
+							let index = 4;
+							if (props.admin) index = index + 1;
+							if (single) index = index + 1;
+							return classes['row'+index];
+						})}
 						control={<Checkbox checked={expires} onChange={toggleExpires} />}
 						label="Invite expires"
 						/>
@@ -190,7 +209,7 @@ export function Invite(props) {
 							<FormControl className={clsx(() => {
 								let index = 4;
 								if (props.admin) index = index + 1;
-								if (state.single) index = index + 1;
+								if (single) index = index + 1;
 								return classes['row'+index];
 							}, classes.input)}>
 								<InputLabel>Invite Duration (hours)</InputLabel>
@@ -211,7 +230,7 @@ export function Invite(props) {
 					<Button
 					variant={"contained"}
 					color={"primary"}
-					disabled={((state.single && validation.email.isInvalid) || (expires && validation.duration.isInvalid))}
+					disabled={((single && validation.email.isInvalid) || (expires && validation.duration.isInvalid))}
 					onClick={() => {props.inviteAction(state)}}
 					>
 						Create Invite
