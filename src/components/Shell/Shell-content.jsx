@@ -5,17 +5,12 @@ import { makeStyles } from '@material-ui/core/styles';
 // toolbar imports
 import { AppBar, Toolbar } from '@material-ui/core';
 // drawer imports
-import { Drawer, Divider, List } from '@material-ui/core';
-import DrawerItem from './DrawerItem';
 // text and buttons
 import { Typography, IconButton } from '@material-ui/core';
 // menu and items
 import { Menu, MenuItem } from '@material-ui/core';
 // icons
-import MenuIcon from '@material-ui/icons/Menu';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
-// drawer icons
-import HomeIcon from '@material-ui/icons/HomeRounded';
 
 // create styles
 const useStyles = makeStyles(theme => ({
@@ -51,39 +46,11 @@ export function Shell(props) {
 	const handleClose = () => {
 		setState({...state, menuAnchorEl: null});
 	};
-
-	const menuButton = () => event => {
-		// ignore tab and shift keys (to tab through options)
-		if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
-			return;
-		}
-		// set drawer state
-		setState({...state, drawer: !state.drawer});
-	};
-
-	// drawer contents
-	const drawerList = (
-		<React.Fragment>
-			<List>
-				<DrawerItem to={"/"} primary="Home" icon={<HomeIcon />} />
-				<Divider variant="middle" />
-			</List>
-		</React.Fragment>
-	);
 	
 	return (
 		<div className={classes.root}>
 			<AppBar position="static">
 				<Toolbar>
-					<IconButton
-					edge="start"
-					className={classes.menuButton}
-					color="inherit"
-					aria-label="menu"
-					onClick={menuButton()}
-					>
-						<MenuIcon />
-					</IconButton>
 					<Typography variant="h5" className={classes.title}>
 						StrangeScout
 					</Typography>
@@ -128,18 +95,6 @@ export function Shell(props) {
 					</div>
 				</Toolbar>
 			</AppBar>
-			{/* menu drawer toggled by state */}
-			<Drawer id="menudrawer" open={state.drawer} onClose={menuButton()}>
-				<div
-				className={classes.drawerContents}
-				role="presentation"
-				onClick={menuButton()}
-				onKeyDown={menuButton()}
-				>
-					{/* use our drawer list defined earlier ^ */}
-					{drawerList}
-				</div>
-			</Drawer>
 		</div>
 	);
 };

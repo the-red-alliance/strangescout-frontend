@@ -1,4 +1,5 @@
 import React from 'react';
+import { useHistory } from 'react-router-dom';
 // for styles
 import { makeStyles } from '@material-ui/core/styles';
 // cards
@@ -69,8 +70,14 @@ const useStyles = makeStyles(theme => ({
 export function Home(props) {
 	// import classes/styles
 	const classes = useStyles(props);
-
 	const { invite, admin } = props;
+
+	// history api for routing
+	const history = useHistory();
+
+	const redirect = (path) => {
+		history.push(path);
+	};
 
 	return (
 		<div className={classes.root}>
@@ -90,7 +97,7 @@ export function Home(props) {
 						</div>
 						{ invite &&
 							<div className={classes.row3}>
-								<Button className={classes.button} variant="contained">
+								<Button className={classes.button} variant="contained" onClick={() => redirect('/invite')}>
 									Invite a User
 								</Button>
 							</div>

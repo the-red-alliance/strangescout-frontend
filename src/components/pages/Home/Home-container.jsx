@@ -15,7 +15,7 @@ function mapStateToProps(state) {
 
 function HomeContainer(props) {
 	// redirect to the login page if the user isn't logged in
-	if (process.env.NODE_ENV && !props.user.loggedin) return <Redirect to={"/login"} />;
+	if (process.env.NODE_ENV === 'production' && !props.user.loggedin) return <Redirect to={"/login"} />;
 
 	return (
 		<Home invite={props.user.session.invite} admin={props.user.session.admin} />

@@ -10,6 +10,7 @@ import NotFound from '../pages/NotFound';
 import Home from '../pages/Home';
 import Login from '../pages/Login';
 import SignUp from '../pages/SignUp';
+import Invite from '../pages/Invite';
 
 export function PageRouter(props) {
 	return(
@@ -17,6 +18,7 @@ export function PageRouter(props) {
 			<Route exact path="/" component={Home} />
 			<Route exact path="/login" component={Login} />
 			<Route exact path="/signup" component={SignUp} />
+			<Route exact path="/invite" component={Invite} />
 			<Route component={NotFound} />
 		</Switch>
 	);
