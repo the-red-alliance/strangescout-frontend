@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { createInvite } from '../../../store/invite/actions';
+import { createInvite, clearInvite } from '../../../store/invite/actions';
 
 import { Redirect } from 'react-router-dom';
 
@@ -20,12 +20,12 @@ function InviteContainer(props) {
 	// redirect to the home page if the user can't invite
 	if (process.env.NODE_ENV === 'production' && !props.user.session.invite) return <Redirect to={"/"} />;
 
-	function action(inviteData) {
-		props.dispatch(createInvite(props.user.session.token, inviteData));
-	};
-
 	return (
-		<Invite admin={props.user.session.admin} invite={props.invite} inviteAction={action} />
+		<Invite
+		admin={props.user.session.admin}
+		invite={props.invite}
+		inviteAction={(inviteData) => props.dispatch(createInvite(props.user.session.token, inviteData))}
+		resetAction={() => props.dispatch(clearInvite())} />
 	);
 };
 
