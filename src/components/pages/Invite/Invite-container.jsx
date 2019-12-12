@@ -18,7 +18,7 @@ function mapStateToProps(state) {
 
 function InviteContainer(props) {
 	// redirect to the home page if the user can't invite
-	if (process.env.NODE_ENV === 'production' && !props.user.invite) return <Redirect to={"/"} />;
+	if (process.env.NODE_ENV === 'production' && !props.user.session.invite) return <Redirect to={"/"} />;
 
 	function action(inviteData) {
 		props.dispatch(createInvite(props.user.session.token, inviteData));
