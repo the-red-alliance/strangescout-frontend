@@ -11,9 +11,7 @@ const user = {
 	},
 	
 	loggedin: false,
-	loading: false,
-
-	error: null
+	loading: false
 };
 
 // reducer
@@ -23,31 +21,26 @@ function userReducer(state = user, action) {
 	switch(action.type) {
 // ----------------------------------------------------------------------------
 		case 'LOG_IN_BEGIN':
-			return { ...user, loading: true, loggedin: false, error: null };
+			return { ...user, loading: true, loggedin: false };
 		case 'LOG_IN_SUCCESS':
 			return { ...state, loading: false, loggedin: true, session: action.session };
 		case 'LOG_IN_FAILURE':
-			return { ...user, error: action.error };
+			return user;
 // ----------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------
 		case 'CREATE_BEGIN':
-			return { ...user, loading: true, loggedin: false, error: null };
+			return { ...user, loading: true, loggedin: false };
 		case 'CREATE_SUCCESS':
 			return { ...state, loading: false, loggedin: true, session: action.session };
 		case 'CREATE_FAILURE':
-			return { ...user, error: action.error };
+			return user;
 // ----------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------
 		case 'LOG_OUT':
 			// return initial user state
 			return user;
-// ----------------------------------------------------------------------------
-
-// ----------------------------------------------------------------------------
-		case 'CLEAR_USER_ERROR':
-			return { ...state, error: null };
 // ----------------------------------------------------------------------------
 
 		default:

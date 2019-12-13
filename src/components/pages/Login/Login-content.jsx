@@ -127,7 +127,7 @@ export function Login(props) {
 				<CardHeader className={classes.cardHeader} title={"Login"} />
 				<CardContent>
 					<div className={classes.formContainer}>
-						<FormControl className={clsx(classes.input, classes.userInput)}>
+						<FormControl className={clsx(classes.input, classes.userInput)} disabled={props.loading}>
 							<InputLabel>Email</InputLabel>
 							<Input
 							id="email"
@@ -145,7 +145,7 @@ export function Login(props) {
 							: ''}
 						</FormControl>
 
-						<FormControl className={clsx(classes.input, classes.passInput)}>
+						<FormControl className={clsx(classes.input, classes.passInput)} disabled={props.loading}>
 							<InputLabel>Password</InputLabel>
 							<Input
 							id="password"
@@ -179,7 +179,7 @@ export function Login(props) {
 					<Button
 					variant={"contained"}
 					color={"primary"}
-					disabled={!validation.isValid}
+					disabled={!validation.isValid || props.loading}
 					onClick={() => {props.loginAction(state.user)}}
 					>
 						Login

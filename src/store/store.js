@@ -4,12 +4,12 @@ import { createStore, combineReducers, compose, applyMiddleware } from 'redux';
 import thunk from "redux-thunk";
 
 import userReducer from './user/reducer';
-import inviteReducer from './invite/reducer';
+import notificationReducer from './notifications/reducer';
 
 // combine reducers to one root reducer
 const rootReducer = combineReducers({
 	user: userReducer,
-	invite: inviteReducer,
+	notification: notificationReducer,
 });
 
 // use enable redux dev tools if available

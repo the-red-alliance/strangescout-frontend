@@ -1,6 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
+import { logout } from '../../store/user/actions';
+import { sendNotification } from '../../store/notifications/actions';
+
 // import shell content
 import { Shell } from './Shell-content.jsx';
 
@@ -14,11 +17,18 @@ function mapStateToProps(state) {
 };
 
 function ShellContainer(props) {
-	// return shell content passing in loggedin prop
+	const logoutAction = () => {
+		props.dispatch(logout());
+		props.dispatch(sendNotification({
+			variant: 'success',
+			text: 'Logged out!'
+		}));
+	};
+
 	return (
 		<React.Fragment>
 			<Notifications />
-			<Shell loggedin={props.user.loggedin}/>
+			<Shell loggedin={props.user.loggedin} logoutAction={logoutAction} />
 		</React.Fragment>
 	);
 };

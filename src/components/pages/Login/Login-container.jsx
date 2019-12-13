@@ -9,7 +9,9 @@ import { loginUser } from '../../../store/user/actions';
 
 // map store to prop (currently not needed here)
 function mapStateToProps(state) {
-	return {};
+	return {
+		user: state.user,
+	};
 };
 
 function LoginContainer(props) {
@@ -24,7 +26,7 @@ function LoginContainer(props) {
 	};
 
 	return (
-		<Login loginAction={login} />
+		<Login loading={props.user.loading} loginAction={login} />
 	);
 };
 

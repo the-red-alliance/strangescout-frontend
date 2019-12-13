@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 // for styles
 import { makeStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
@@ -16,34 +15,10 @@ import { Visibility, VisibilityOff } from '@material-ui/icons';
 import formValidator from '../../../utils/formValidator.js';
 const validator = new formValidator([
 	{
-		// id of input
-		field: 'email',
-		// type of validation
-		method: 'isEmpty',
-		validWhen: false,
-		// error message
-		message: 'Email is required'
-	},
-	{
-		// id of input
-		field: 'email',
-		// type of validation
-		method: 'isEmail',
-		validWhen: true,
-		// error message
-		message: 'Not a valid email'
-	},
-	{
 		field: 'password',
 		method: 'isEmpty',
 		validWhen: false,
 		message: 'Password is required'
-	},
-	{
-		field: 'code',
-		method: 'isEmpty',
-		validWhen: false,
-		message: 'Invite code is required'
 	},
 ]);
 
@@ -71,19 +46,11 @@ const useStyles = makeStyles(theme => ({
 		width: "100%",
 		display: "grid",
 		gridTemplateColumns: "1fr",
-		gridTemplateRows: "1fr 1fr 1fr",
+		gridTemplateRows: "1fr",
 		gridGap: "20px",
 	},
-	userInput: {
+	row1: {
 		gridRow: "1 / 2",
-		gridColumn: "1 / 2",
-	},
-	passInput: {
-		gridRow: "2 / 3",
-		gridColumn: "1 / 2",
-	},
-	codeInput: {
-		gridRow: "3 / 4",
 		gridColumn: "1 / 2",
 	},
 
@@ -95,22 +62,15 @@ const useStyles = makeStyles(theme => ({
 		position: 'absolute',
 		bottom: -22,
 	},
-
-	spacer: {
-		display: 'flex',
-		flexGrow: 1,
-	},
 }));
 
-export function SignUp(props) {
+export function Account(props) {
 	// import classes/styles
 	const classes = useStyles();
 
 	const initialState = {
-		newUser: {
-			email: '',
+		settings: {
 			password: '',
-			code: props.code ? props.code : '',
 		},
 		// track what fields have been touched
 		touched: {},
@@ -120,48 +80,31 @@ export function SignUp(props) {
 	const [state, setState] = useState(initialState);
 
 	// generate validation object from validators
-	const validation = validator.validate(state.newUser);
+	const validation = validator.validate(state.settings);
 
 	// update fields in state
 	const handleChange = prop => event => {
-		setState({ ...state, newUser: {...state.newUser, [prop]: event.target.value}, touched: { ...state.touched, [prop]: true } });
+		setState({ ...state, settings: {...state.settings, [prop]: event.target.value}, touched: { ...state.touched, [prop]: true } });
 	};
 
 	// toggle password visibility in state
 	const handleClickShowPassword = () => {
 		setState({ ...state, showPassword: !state.showPassword });
 	};
-	
+
 	return (
 		<div className={classes.root}>
 			<Card className={classes.card}>
-				<CardHeader className={classes.cardHeader} title={"Sign Up"} />
+				<CardHeader className={classes.cardHeader} title={"Account Settings"} />
 				<CardContent>
 					<div className={classes.formContainer}>
-						<FormControl className={clsx(classes.input, classes.userInput)} disabled={props.loading}>
-							<InputLabel>Email</InputLabel>
-							<Input
-							id="email"
-							type="text"
-							value={state.newUser.email}
-							onChange={handleChange('email') /* triger handleChange fn from parent */}
-							/>
-							{/* if `username` is present in the touched object:
-							display any errors for `username` in the validation object
-							else display blank ('') */}
-							{state.touched.email ?
-								<Typography variant={'body2'} color={'error'} className={classes.errorText}>
-									{validation.email.message}
-								</Typography>
-							: ''}
-						</FormControl>
-
-						<FormControl className={clsx(classes.input, classes.passInput)} disabled={props.loading}>
-							<InputLabel>Password</InputLabel>
+						<FormControl className={clsx(classes.input, classes.passInput)}>
+							<InputLabel>New password</InputLabel>
 							<Input
 							id="password"
+							disabled={props.loading}
 							type={state.showPassword ? 'text' : 'password' /* if `showPassword` this is a text field, else an obscured password field */}
-							value={state.newUser.password}
+							value={state.settings.password}
 							onChange={handleChange('password')}
 							endAdornment={
 								<InputAdornment position="end">
@@ -182,36 +125,16 @@ export function SignUp(props) {
 								</Typography>
 							: ''}
 						</FormControl>
-
-						<FormControl className={clsx(classes.input, classes.codeInput)} disabled={(props.code) || props.loading}>
-							<InputLabel>Invite Code</InputLabel>
-							<Input
-							id="code"
-							type="text"
-							value={state.newUser.code}
-							onChange={handleChange('code') /* triger handleChange fn from parent */}
-							/>
-							{/* if `code` is present in the touched object:
-							display any errors for `code` in the validation object
-							else display blank ('') */}
-							{state.touched.code ?
-								<Typography variant={'body2'} color={'error'} className={classes.errorText}>
-									{validation.code.message}
-								</Typography>
-							: ''}
-						</FormControl>
 					</div>
 				</CardContent>
 				<CardActions className={classes.cardActions}>
-					<Link to="/login">Already have an account?</Link>
-					<span className={classes.spacer} />
 					<Button
 					variant={"contained"}
 					color={"primary"}
 					disabled={!validation.isValid || props.loading}
-					onClick={() => {props.createAction(state.newUser)}}
+					onClick={() => props.saveAction(state.settings)}
 					>
-						Sign Up
+						Save
 					</Button>
 				</CardActions>
 			</Card>

@@ -88,8 +88,8 @@ export function put(url, body, token, headers) {
 };
 
 /**
- * PUT request
- * @param {string} url URL to PUT
+ * DELETE request
+ * @param {string} url URL to DELETE
  * @param {string} token passport auth token
  * @param {[]} headers Array of objects for headers
  * ex. `{name: 'Content-type', value: 'application/json'}`

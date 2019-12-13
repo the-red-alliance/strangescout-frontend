@@ -52,7 +52,7 @@ const useStyles = makeStyles(theme => ({
 
 export function Notifications(props) {
 	const classes = useStyles();
-	const { open, handleClose, message, onClose, variant, ...other } = props;
+	const { open, handleClose, onClose, text, variant, ...other } = props;
 	const Icon = variantIcon[variant];
 
 	return (
@@ -62,7 +62,7 @@ export function Notifications(props) {
 			horizontal: 'left',
 		}}
 		open={open}
-		autoHideDuration={6000}
+		autoHideDuration={5000}
 		onClose={handleClose}
 		>
 			<SnackbarContent
@@ -70,8 +70,10 @@ export function Notifications(props) {
 			aria-describedby="client-snackbar"
 			message={
 				<span id="client-snackbar" className={classes.message}>
-					<Icon className={clsx(classes.icon, classes.iconVariant)} />
-					<Typography className={classes.messageText}>{message}</Typography>
+					{ variant && // prevents an error in the console (component renders but icon is undefined because no `variant` prop is given)
+						<Icon className={clsx(classes.icon, classes.iconVariant)} />
+					}
+					<Typography className={classes.messageText}>{text}</Typography>
 				</span>
 			}
 			{...other}

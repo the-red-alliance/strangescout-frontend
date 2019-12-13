@@ -1,5 +1,7 @@
 import { get, post } from '../../utils/requests';
 
+import { sendNotification } from '../notifications/actions';
+
 // ----------------------------------------------------------------------------
 export const CREATE_BEGIN = 'CREATE_BEGIN';
 export const CREATE_SUCCESS = 'CREATE_SUCCESS';
@@ -11,8 +13,8 @@ export function createBegin() {
 export function createSuccess(session) {
 	return { type: CREATE_SUCCESS, session: session };
 };
-export function createFailure(error) {
-	return { type: CREATE_FAILURE, error: error };
+export function createFailure() {
+	return { type: CREATE_FAILURE };
 };
 
 /**
@@ -47,31 +49,59 @@ export function createUser(user, callback) {
 					localStorage.setItem('session', JSON.stringify(session));
 					// dispatch the success event
 					dispatch(createSuccess(session));
+					dispatch(sendNotification({
+						variant: 'success',
+						text: 'Account created!'
+					}));
 					if (callback) callback();
 				} catch {
 					// if we fail to parse fail the login sequence with an error message
-					dispatch(createFailure('Error verifying login!'));
+					dispatch(createFailure());
+					dispatch(sendNotification({
+						variant: 'error',
+						text: 'Error verifying login!'
+					}));
 				}
 			} else if (result.status === 422) {
 				// a 422 code is missing required fields in the payload
-				dispatch(createFailure('Missing required fields!'));
+				dispatch(createFailure());
+				dispatch(sendNotification({
+					variant: 'error',
+					text: 'Missing required fields!'
+				}));
 			} else if (result.status === 409) {
 				// if we get a 409 code the user already exists
-				dispatch(createFailure('Username already exists!'));
+				dispatch(createFailure());
+				dispatch(sendNotification({
+					variant: 'error',
+					text: 'Username already exists!'
+				}));
 			} else if (result.status === 403) {
 				// if we get a 403 code the invite can't be used by this user
-				dispatch(createFailure('Invite code is restricted!'));
+				dispatch(createFailure());
+				dispatch(sendNotification({
+					variant: 'error',
+					text: 'Invite code is restricted!'
+				}));
 			} else if (result.status === 440) {
 				// if we get a 440 code the invite is expired
-				dispatch(createFailure('Invite code is expired!'));
+				dispatch(createFailure());
+				dispatch(sendNotification({
+					variant: 'error',
+					text: 'Invite code is expired!'
+				}));
 			} else {
 				// else just fail
 				console.error('failed to create account');
 				console.error(result);
-				dispatch(createFailure('Error creating the account!'));
+				dispatch(createFailure());
+				dispatch(sendNotification({
+					variant: 'error',
+					text: 'Error creating the account!'
+				}));
 			}
 		}).catch(() => {
-			dispatch(createFailure(null));
+			dispatch(createFailure());
 		});
 	};
 };
@@ -88,8 +118,8 @@ export function loginBegin() {
 export function loginSuccess(session) {
 	return { type: LOG_IN_SUCCESS, session: session };
 };
-export function loginFailure(error) {
-	return { type: LOG_IN_FAILURE, error: error };
+export function loginFailure() {
+	return { type: LOG_IN_FAILURE };
 };
 
 export function loginUser(email, password, callback) {
@@ -112,21 +142,45 @@ export function loginUser(email, password, callback) {
 
 					localStorage.setItem('session', JSON.stringify(session));
 					dispatch(loginSuccess(session));
+					dispatch(sendNotification({
+						variant: 'success',
+						text: 'Logged in!'
+					}));
 					if (callback) callback();
 				} catch {
-					dispatch(loginFailure('Error verifying login!'));
+					dispatch(loginFailure());
+					dispatch(sendNotification({
+						variant: 'error',
+						text: 'Error verifying login!'
+					}));
 				}
 			} else if (result.status === 404) {
-				dispatch(loginFailure('User not found!'));
+				dispatch(loginFailure());
+				dispatch(sendNotification({
+					variant: 'error',
+					text: 'User not found!'
+				}));
 			} else if (result.status === 422) {
-				dispatch(loginFailure('Missing required fields!'));
+				dispatch(loginFailure());
+				dispatch(sendNotification({
+					variant: 'error',
+					text: 'Missing required fields!'
+				}));
 			} else if (result.status === 401) {
-				dispatch(loginFailure('Username or password is invalid!'));
+				dispatch(loginFailure());
+				dispatch(sendNotification({
+					variant: 'error',
+					text: 'Username or password is invalid!'
+				}));
 			} else {
-				dispatch(loginFailure('Error verifying login!'));
+				dispatch(loginFailure());
+				dispatch(sendNotification({
+					variant: 'error',
+					text: 'Error verifying login!'
+				}));
 			};
 		}).catch(() => {
-			dispatch(loginFailure(null));
+			dispatch(loginFailure());
 		});
 	};
 };
@@ -151,17 +205,29 @@ export function verifyLogin(token, callback) {
 					dispatch(loginSuccess(session));
 					if (callback) callback();
 				} catch {
-					dispatch(loginFailure('Error verifying login!'));
+					dispatch(loginFailure());
+					dispatch(sendNotification({
+						variant: 'error',
+						text: 'Error verifying login!'
+					}));
 				}
 			} else if (result.status === 404) {
-				dispatch(loginFailure('User not found!'));
+				dispatch(loginFailure());
+				dispatch(sendNotification({
+					variant: 'error',
+					text: 'User not found!'
+				}));
 			} else if (result.response.toString().includes('jwt expired')) {
-				dispatch(loginFailure(null));
+				dispatch(loginFailure());
 			} else {
-				dispatch(loginFailure('Error verifying login!'));
+				dispatch(loginFailure());
+				dispatch(sendNotification({
+					variant: 'error',
+					text: 'Error verifying login!'
+				}));
 			}
 		}).catch(() => {
-			dispatch(loginFailure(null));
+			dispatch(loginFailure());
 		});
 	};
 };
@@ -172,12 +238,4 @@ export const LOG_OUT = 'LOG_OUT';
 
 export function logout() {
 	return { type: LOG_OUT };
-};
-// ----------------------------------------------------------------------------
-
-// Clear errors ---------------------------------------------------------------
-export const CLEAR_USER_ERROR = 'CLEAR_USER_ERROR';
-
-export function clearUserError() {
-	return { type: CLEAR_USER_ERROR };
 };

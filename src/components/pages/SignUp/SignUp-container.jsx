@@ -14,7 +14,9 @@ function useQuery() {
 
 // map store to prop (currently not needed here)
 function mapStateToProps(state) {
-	return {};
+	return {
+		user: state.user,
+	};
 };
 
 function SignUpContainer(props) {
@@ -30,7 +32,7 @@ function SignUpContainer(props) {
 	};
 
 	return (
-		<SignUp code={query.get("code")} createAction={create} />
+		<SignUp loading={props.user.loading} code={query.get("code")} createAction={create} />
 	);
 };
 

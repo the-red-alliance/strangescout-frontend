@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { useHistory } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 // for styles
 import { makeStyles } from '@material-ui/core/styles';
 // toolbar imports
 import { AppBar, Toolbar } from '@material-ui/core';
 // drawer imports
 // text and buttons
-import { Typography, IconButton } from '@material-ui/core';
+import { Typography, Button, IconButton } from '@material-ui/core';
 // menu and items
 import { Menu, MenuItem } from '@material-ui/core';
 // icons
@@ -21,8 +21,13 @@ const useStyles = makeStyles(theme => ({
 		marginRight: theme.spacing(2),
 	},
 	title: {
+		textTransform: 'none',
+	},
+
+	spacer: {
 		flexGrow: 1,
 	},
+
 	drawerContents: {
 		width: 175,
 	},
@@ -34,7 +39,7 @@ export function Shell(props) {
 	// history api for routing
 	const history = useHistory();
 	// state for drawer and user menu
-	const [state, setState] = useState({drawer: false, menuAnchorEl: null});
+	const [state, setState] = useState({menuAnchorEl: null});
 	// boolean for menu state
 	const menuOpen = Boolean(state.menuAnchorEl);
 
@@ -51,9 +56,12 @@ export function Shell(props) {
 		<div className={classes.root}>
 			<AppBar position="static">
 				<Toolbar>
-					<Typography variant="h5" className={classes.title}>
-						StrangeScout
-					</Typography>
+					<Button variant="text" color="inherit" component={Link} to="/" className={classes.title}>
+						<Typography variant="h5" color="inherit">
+							StrangeScout
+						</Typography>
+					</Button>
+					<span className={classes.spacer} />
 					<div>
 						<IconButton
 						aria-label="account"
@@ -81,9 +89,8 @@ export function Shell(props) {
 						>
 							{props.loggedin ?
 							[
-								<MenuItem key={"profile"} onClick={handleClose}>Profile</MenuItem>,
-								<MenuItem key={"account"} onClick={handleClose}>My account</MenuItem>,
-								<MenuItem key={"logout"} onClick={handleClose}>Logout</MenuItem>
+								<MenuItem key={"settings"} onClick={() => {history.push('/account'); handleClose();}}>Settings</MenuItem>,
+								<MenuItem key={"logout"} onClick={() => {props.logoutAction(); handleClose();}}>Logout</MenuItem>
 							].map(item => item)
 							:
 							[
