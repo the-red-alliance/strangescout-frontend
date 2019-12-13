@@ -16,12 +16,16 @@ import Account from '../pages/Account';
 export function PageRouter(props) {
 	return(
 		<Switch location={props.location}>
-			<Route exact path="/" component={Home} />
-			<Route exact path="/login" component={Login} />
-			<Route exact path="/signup" component={SignUp} />
-			<Route exact path="/invite" component={Invite} />
-			<Route exact path="/account" component={Account} />
-			<Route component={NotFound} />
+			{ props.ready &&
+				[
+					<Route exact key="/" path="/" component={Home} />,
+					<Route exact key="/login" path="/login" component={Login} />,
+					<Route exact key="/signup" path="/signup" component={SignUp} />,
+					<Route exact key="/invite" path="/invite" component={Invite} />,
+					<Route exact key="/account" path="/account" component={Account} />,
+					<Route key="notfound" component={NotFound} />
+				].map(item => item)
+			}
 		</Switch>
 	);
 };

@@ -23,8 +23,8 @@ function SignUpContainer(props) {
 	const query = useQuery();
 	const history = useHistory();
 
-	const callback = () => {
-		history.push('/');
+	const callback = (success) => {
+		if (success) history.push('/');
 	};
 
 	function create(user) {

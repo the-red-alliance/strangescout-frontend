@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 // routing imports
 import { HashRouter as Router } from "react-router-dom";
@@ -13,6 +13,8 @@ import { makeStyles } from '@material-ui/core/styles';
 // import the shell
 import Shell from '../Shell';
 
+import Loader from './Loader';
+
 const useStyles = makeStyles(theme => ({
 	view: {
 		// padding between page views and title bar
@@ -21,16 +23,18 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export function App() {
+	const [ initialLoad, setInitialLoad ] = useState(false);
 	// import classes/styles
 	const classes = useStyles();
 
 	return (
 		<Provider store={store}>
+			<Loader initialLoad={initialLoad} afterLoad={() => setInitialLoad(true)} />
 			<div className="app">
 				<Router>
 					<Shell />
 					<div className={classes.view}>
-						<PageRouter />
+						<PageRouter ready={initialLoad} />
 					</div>
 				</Router>
 			</div>
