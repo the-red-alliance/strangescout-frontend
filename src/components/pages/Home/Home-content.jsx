@@ -28,7 +28,7 @@ const useStyles = makeStyles(theme => ({
 		gridTemplateColumns: "1fr",
 		gridTemplateRows: props => {
 			const { admin, invite } = props;
-			let rows = '1fr 1fr';
+			let rows = '1fr 1fr 1fr';
 			if (admin) rows = rows + ' 1fr';
 			if (invite) rows = rows + ' 1fr';
 			return rows;
@@ -55,6 +55,25 @@ const useStyles = makeStyles(theme => ({
 	},
 	row4: {
 		gridRow: "4 / 5",
+		gridColumn: "1 / 2",
+		display: 'flex',
+		justifyContent: 'center',
+	},
+	row5: {
+		gridRow: "5 / 6",
+		gridColumn: "1 / 2",
+		display: 'flex',
+		justifyContent: 'center',
+	},
+
+	syncButton: {
+		gridRow: props => {
+			const { admin, invite } = props;
+			let index = 3;
+			if (admin) index = index + 1;
+			if (invite) index = index + 1;
+			return `${index} / ${index + 1}`;
+		},
 		gridColumn: "1 / 2",
 		display: 'flex',
 		justifyContent: 'center',
@@ -103,12 +122,17 @@ export function Home(props) {
 							</div>
 						}
 						{ admin &&
-							<div className={props.invite ? classes.row4 : classes.row3}>
+							<div className={invite ? classes.row4 : classes.row3}>
 								<Button className={classes.button} variant="contained" color="secondary">
 									Admin Panel
 								</Button>
 							</div>
 						}
+						<div className={classes.syncButton}>
+							<Button className={classes.button} variant="contained" color="secondary" onClick={props.syncAction}>
+								Sync Data
+							</Button>
+						</div>
 					</div>
 				</CardContent>
 			</Card>
