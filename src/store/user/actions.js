@@ -1,5 +1,4 @@
 import { get, post } from '../../utils/requests';
-
 import { sendNotification } from '../notifications/actions';
 
 // ----------------------------------------------------------------------------
@@ -53,7 +52,7 @@ export function createUser(user, callback) {
 						variant: 'success',
 						text: 'Account created!'
 					}));
-					if (callback) callback(true);
+					if (callback) callback(true, session);
 				} catch {
 					// if we fail to parse fail the login sequence with an error message
 					dispatch(createFailure());
@@ -153,7 +152,7 @@ export function loginUser(email, password, callback) {
 						variant: 'success',
 						text: 'Logged in!'
 					}));
-					if (callback) callback(true);
+					if (callback) callback(true, session);
 				} catch {
 					dispatch(loginFailure());
 					dispatch(sendNotification({
@@ -215,7 +214,7 @@ export function verifyLogin(token, backupsession, callback) {
 				if (backupsession) {
 					localStorage.setItem('session', JSON.stringify(backupsession));
 					dispatch(loginSuccess(backupsession));
-					if (callback) callback(true);
+					if (callback) callback(true, backupsession);
 				} else {
 					dispatch(loginFailure());
 					if (callback) callback(false);
@@ -226,7 +225,7 @@ export function verifyLogin(token, backupsession, callback) {
 
 					localStorage.setItem('session', JSON.stringify(session));
 					dispatch(loginSuccess(session));
-					if (callback) callback(true);
+					if (callback) callback(true, session);
 				} catch {
 					dispatch(loginFailure());
 					dispatch(sendNotification({

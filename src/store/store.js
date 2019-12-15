@@ -5,11 +5,13 @@ import thunk from "redux-thunk";
 
 import userReducer from './user/reducer';
 import notificationReducer from './notifications/reducer';
+import templateReducer from './template/reducer';
 
 // combine reducers to one root reducer
 const rootReducer = combineReducers({
 	user: userReducer,
 	notification: notificationReducer,
+	template: templateReducer,
 });
 
 // use enable redux dev tools if available

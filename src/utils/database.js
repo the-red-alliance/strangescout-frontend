@@ -1,11 +1,16 @@
 import Dexie from 'dexie';
-import { get } from './requests';
+import { post, get } from './requests';
 import dateParser from './dateParser';
 
-const version = 2;
-const stores = {
-	runs: '&_id, team, match, updated',
-};
+const versions = [
+	{
+		version: 1,
+		stores: {
+			runs: '&_id, team, match, updated',
+			localRuns: '++localId, team, match',
+		},
+	},
+];
 
 export function clearRuns() {
 	const db = new Dexie('strangescout');
@@ -15,7 +20,9 @@ export function clearRuns() {
 export function mostRecentRun() {
 	return new Promise((resolve, reject) => {
 		const db = new Dexie('strangescout');
-		db.version(version).stores(stores);
+		versions.forEach(version => {
+			db.version(version.version).stores(version.stores);
+		});
 
 		db.runs.orderBy('updated').last().then(object => {
 			if (object) {
@@ -34,10 +41,10 @@ export function mostRecentRun() {
 
 export function fetchNewRuns(token) {
 	return new Promise((resolve, reject) => {
-		//clearRuns();
 		const db = new Dexie('strangescout');
-
-		db.version(version).stores(stores);
+		versions.forEach(version => {
+			db.version(version.version).stores(version.stores);
+		});
 
 		mostRecentRun().then((lastUpdated) => {
 			const url = lastUpdated ? window.origin + '/api/runs?updated=' + JSON.stringify(lastUpdated) : '/api/runs';
@@ -63,11 +70,13 @@ export function fetchNewRuns(token) {
 						reject('failed to parse');
 					}
 				} else {
+					console.error('failed to get runs from server', result);
 					reject('failed to fetch');
 				}
 			});
 		}, () => {
-			reject('couldn\'t find last modified')
+			console.error('error finding last modified');
+			reject('couldn\'t find last modified');
 		});
 	});
 };
@@ -75,8 +84,9 @@ export function fetchNewRuns(token) {
 export function fetchRemovedRuns(token) {
 	return new Promise((resolve, reject) => {
 		const db = new Dexie('strangescout');
-
-		db.version(version).stores(stores);
+		versions.forEach(version => {
+			db.version(version.version).stores(version.stores);
+		});
 
 		get(
 			'/api/runs/ids',
@@ -121,15 +131,78 @@ export function fetchRemovedRuns(token) {
 	});
 };
 
+export function storeLocalRun(run) {
+	return new Promise((resolve, reject) => {
+		const db = new Dexie('strangescout');
+		versions.forEach(version => {
+			db.version(version.version).stores(version.stores);
+		});
+
+		db.localRuns.put(run).then(() => {
+			resolve();
+		}, (e) => {
+			console.error('failed to store local run', e);
+			reject('failed to store run');
+		});
+	});
+};
+
+export function pushLocalRuns(token) {
+	return new Promise((resolve, reject) => {
+		const db = new Dexie('strangescout');
+		versions.forEach(version => {
+			db.version(version.version).stores(version.stores);
+		});
+
+		db.localRuns.toArray().then(runs => {
+			if (runs.length === 0) resolve();
+			let count = 0;
+			runs.forEach(run => {
+				post(
+					window.origin + '/api/runs',
+					JSON.stringify(run),
+					token,
+					[{name: 'Content-type', value: 'application/json'}]
+				).then(result => {
+					if (result.status === 200) {
+						db.localRuns.delete(run.localId).then(() => {
+							count = count + 1;
+							if (count === runs.length) {
+								resolve();
+							};
+						}, e => {
+							console.error('failed to delete local run', e);
+							reject('failed to delete local run');
+						});
+					} else {
+						console.error('failed to POST local run', result);
+						reject('failed to push runs');
+					}
+				}, e => {
+					console.error('failed to POST local run', e);
+					reject('failed to push runs');
+				});
+			});
+		}, (e) => {
+			console.error('failed to read local runs', e);
+			reject('failed to read runs');
+		});
+	});
+};
+
 export function syncRuns(token) {
 	return new Promise((resolve, reject) => {
-		fetchNewRuns(token).then(() => {
-			fetchRemovedRuns(token).then(() => {
-				resolve();
-			}, (error) => {
+		pushLocalRuns(token).then(() => {
+			fetchNewRuns(token).then(() => {
+				fetchRemovedRuns(token).then(() => {
+					resolve();
+				}, error => {
+					reject(error);
+				});
+			}, error => {
 				reject(error);
 			});
-		}, (error) => {
+		}, error => {
 			reject(error);
 		});
 	});
