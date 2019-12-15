@@ -12,6 +12,7 @@ import Login from '../pages/Login';
 import SignUp from '../pages/SignUp';
 import Invite from '../pages/Invite';
 import Account from '../pages/Account';
+import Run from '../pages/Run';
 
 export function PageRouter(props) {
 	return(
@@ -23,6 +24,7 @@ export function PageRouter(props) {
 					<Route exact key="/signup" path="/signup" component={SignUp} />,
 					<Route exact key="/invite" path="/invite" component={Invite} />,
 					<Route exact key="/account" path="/account" component={Account} />,
+					<Route exact key="/run" path="/run" component={Run} />,
 					<Route key="notfound" component={NotFound} />
 				].map(item => item)
 			}

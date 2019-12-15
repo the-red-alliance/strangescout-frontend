@@ -105,7 +105,7 @@ export function Home(props) {
 				<CardContent>
 					<div className={classes.container}>
 						<div className={classes.row1}>
-							<Button className={classes.button} variant="contained" color="primary">
+							<Button className={classes.button} variant="contained" color="primary" onClick={() => redirect('/run')}>
 								Scout a Match
 							</Button>
 						</div>
