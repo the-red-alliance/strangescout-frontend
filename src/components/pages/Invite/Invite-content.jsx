@@ -103,6 +103,11 @@ const useStyles = makeStyles(theme => ({
 		position: 'absolute',
 		bottom: -22,
 	},
+
+	spacer: {
+		display: 'flex',
+		flexGrow: 1,
+	},
 }));
 
 export function Invite(props) {
@@ -125,7 +130,13 @@ export function Invite(props) {
 
 	// update fields in state
 	const handleChange = prop => event => {
-		setState({ ...state, [prop]: event.target.type === 'number' ? parseInt(event.target.value) : event.target.value });
+		let newvalue;
+		if (event.target.type === 'number') {
+			newvalue = Boolean(event.target.value) ? parseInt(event.target.value) : null;
+		} else {
+			newvalue = event.target.value;
+		}
+		setState({ ...state, [prop]: newvalue });
 	};
 
 	const toggleChecked = key => {
@@ -238,6 +249,7 @@ export function Invite(props) {
 					}
 				</CardContent>
 				<CardActions className={classes.cardActions}>
+					<span className={classes.spacer} />
 					{ !props.invite.invite.code ?
 						<Button
 						variant={"contained"}

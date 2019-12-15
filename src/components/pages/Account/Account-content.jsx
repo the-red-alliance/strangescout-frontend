@@ -62,6 +62,11 @@ const useStyles = makeStyles(theme => ({
 		position: 'absolute',
 		bottom: -22,
 	},
+
+	spacer: {
+		display: 'flex',
+		flexGrow: 1,
+	},
 }));
 
 export function Account(props) {
@@ -128,6 +133,7 @@ export function Account(props) {
 					</div>
 				</CardContent>
 				<CardActions className={classes.cardActions}>
+					<span className={classes.spacer} />
 					<Button
 					variant={"contained"}
 					color={"primary"}
