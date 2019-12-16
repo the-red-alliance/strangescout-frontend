@@ -53,7 +53,6 @@ export function Run(props) {
 	const initialState = {
 		readableEventLog: [],
 		currentEvent: undefined,
-		remaining: totalTime,
 		loadoutShown: false,
 	};
 	const [ state, setState ] = useState(initialState);
@@ -62,12 +61,13 @@ export function Run(props) {
 	// if they're in the same state the delay reads state from when it was started,
 	// resulting in an empty dialog re-opening
 	const [ childOpen, setChildOpen ] = useState(false);
+	const [ remainingTime, setRemainingTime ] = useState(totalTime);
 
 	// timer hook
 	usePreciseTimer((elapsedSeconds) => {
 		if (Math.abs(elapsedSeconds - 1) / 1 > 0.1) console.warn('timer drift - elapsed: ' + elapsedSeconds);
-		setState({ ...state, remaining: state.remaining - 1 });
-	}, 1000, matchStatus.started && state.remaining > 0);
+		setRemainingTime(remainingTime - 1);
+	}, 1000, matchStatus.started && remainingTime > 0);
 
 	// add an event to the journal
 	const addEvent = (key, display, data, currentEvent) => {
@@ -76,7 +76,7 @@ export function Run(props) {
 
 		newRunState.journal.push({
 			event: key,
-			time: totalTime - state.remaining,
+			time: totalTime - remainingTime,
 			data: data ? data : undefined
 		});
 
@@ -157,7 +157,7 @@ export function Run(props) {
 			<Card className={classes.card}>
 				<CardHeader
 				style={{ textAlign: 'center' }}
-				title={state.remaining > 0 ? state.remaining + ' Seconds Remaining' : 'Time\'s Up!'}
+				title={remainingTime > 0 ? remainingTime + ' Seconds Remaining' : 'Time\'s Up!'}
 				subheader={lastEventDisplay}
 				/>
 				<CardContent>
@@ -181,7 +181,7 @@ export function Run(props) {
 									onClick={() => {
 										addEvent(event.key, event.display, null, event);
 									}}
-									disabled={!(totalTime - state.remaining >= event.activeTime) || (state.remaining === 0 && event.endDisable)}
+									disabled={!(totalTime - remainingTime >= event.activeTime) || (remainingTime === 0 && event.endDisable)}
 									>
 										{event.display}
 									</Button>
@@ -214,7 +214,7 @@ export function Run(props) {
 					<Button
 					variant={"contained"}
 					color={"primary"}
-					disabled={state.remaining > 0}
+					disabled={remainingTime > 0}
 					onClick={afterMatch}
 					>
 						Next

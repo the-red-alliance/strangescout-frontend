@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
-import { Redirect } from 'react-router-dom';
+import { Redirect, useHistory } from 'react-router-dom';
+
 import { sendNotification } from '../../../store/notifications/actions';
+import { storeLocalRun, syncRuns } from '../../../utils/database';
 
 import { Run } from './Run-content.jsx';
 import { SetupDialog } from './Run-SetupDialog.jsx';
+import { FinalizeDialog } from './Run-FinalizeDialog.jsx';
 
 function mapStateToProps(state) {
 	return {
@@ -23,7 +26,7 @@ export function RunContainer(props) {
 
 	const [ dialogs, setDialogs ] = useState({
 		setupDialog: true,
-		finalizeDialog: false
+		finalizeDialog: false,
 	});
 
 	const [ runState, setRunState ] = useState({
@@ -33,6 +36,9 @@ export function RunContainer(props) {
 		journal: [],
 		notes: '',
 	});
+
+	// history api for routing
+	const history = useHistory();
 
 	// redirect to the login page if the user isn't logged in
 	if (process.env.NODE_ENV === 'production' && !props.user.loggedin) return <Redirect to={"/login"} />;
@@ -45,6 +51,31 @@ export function RunContainer(props) {
 	const endMatch = () => {
 		setDialogs({ ...dialogs, finalizeDialog: true });
 		setMatchStatus({ ...matchStatus, completed: true });
+	};
+
+	const onSubmit = () => {
+		storeLocalRun(runState).then(() => {
+			history.push('/');
+
+			syncRuns(props.user.session.token).then(() => {
+				props.dispatch(sendNotification({
+					variant: 'success',
+					text: 'Successfully synced data!'
+				}));
+			}, (e) => {
+				console.error('failed to sync runs ', e);
+				props.dispatch(sendNotification({
+					variant: 'error',
+					text: 'Failed to sync data!'
+				}));
+			});
+		}, (e) => {
+			console.error('failed to save run ', e);
+			props.dispatch(sendNotification({
+				variant: 'error',
+				text: 'Failed to store data!'
+			}));
+		});
 	};
 
 	return (
@@ -64,6 +95,12 @@ export function RunContainer(props) {
 			startMatchAction={startMatch}
 			runState={runState}
 			setRunState={setRunState}
+			/>
+			<FinalizeDialog
+			open={dialogs.finalizeDialog}
+			runState={runState}
+			setRunState={setRunState}
+			onSubmit={onSubmit}
 			/>
 		</React.Fragment>
 	);
