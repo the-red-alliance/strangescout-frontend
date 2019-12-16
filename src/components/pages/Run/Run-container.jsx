@@ -40,6 +40,9 @@ export function RunContainer(props) {
 	// history api for routing
 	const history = useHistory();
 
+	// ensure we actually have a template to use, else go blank
+	if (Object.entries(props.template).length === 0) return (<React.Fragment />);
+
 	// redirect to the login page if the user isn't logged in
 	if (process.env.NODE_ENV === 'production' && !props.user.loggedin) return <Redirect to={"/login"} />;
 

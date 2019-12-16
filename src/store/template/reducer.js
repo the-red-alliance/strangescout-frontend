@@ -171,7 +171,7 @@ const dummyTemplate = {
 const template = {};
 
 // reducer
-function templateReducer(state = dummyTemplate, action) {
+function templateReducer(state = process.env.NODE_ENV === 'production' ? template : dummyTemplate, action) {
 
 	switch(action.type) {
 // ----------------------------------------------------------------------------
