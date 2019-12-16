@@ -4,7 +4,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { Dialog, DialogContent } from '@material-ui/core';
 import { Button } from '@material-ui/core';
 
-const childDialogStyles = makeStyles(theme => ({
+const useStyles = makeStyles(theme => ({
 	dialog: {
 		width: '90%',
 		maxWidth: '300px',
@@ -39,7 +39,7 @@ export function ChildDialog(props) {
 	const children = currentEvent ? currentEvent.children : [];
 
 	// lets us use the old styles
-	const classes = childDialogStyles({ children: children });
+	const classes = useStyles({ children: children });
 
 	const handleClick = child => {
 		onChild(child.key, child.display);

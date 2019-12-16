@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { usePreciseTimer } from '../../../utils/usePreciseTimer';
 import { makeStyles } from '@material-ui/core/styles';
 
-import { Card, CardHeader, CardContent } from '@material-ui/core';
+import { Card, CardHeader, CardContent, CardActions } from '@material-ui/core';
 import { Button } from '@material-ui/core';
 
 import { ChildDialog } from './Run-ChildDialog.jsx';
@@ -37,39 +37,37 @@ const useStyles = makeStyles(theme => ({
 	button: {
 		width: '90%',
 		maxWidth: '225px',
-	}
+	},
+
+	spacer: {
+		display: 'flex',
+		flexGrow: 1,
+	},
 }));
 
 export function Run(props) {
 	const classes = useStyles(props);
-	const { template } = props;
+	const { template, totalTime, matchStatus, afterMatch, runState, setRunState } = props;
 
 	// page state
 	const initialState = {
 		readableEventLog: [],
 		currentEvent: undefined,
-		timerActive: true,
-		remaining: 150,
+		remaining: totalTime,
+		loadoutShown: false,
 	};
 	const [ state, setState ] = useState(initialState);
-
 	// separate child open state
 	// we need to close child dialog first then delay for animation times then clear the content
 	// if they're in the same state the delay reads state from when it was started,
 	// resulting in an empty dialog re-opening
 	const [ childOpen, setChildOpen ] = useState(false);
 
-	// scouted run state
-	const initialRunState = {
-		journal: [],
-	};
-	const [ runState, setRunState ] = useState(initialRunState);
-
 	// timer hook
 	usePreciseTimer((elapsedSeconds) => {
 		if (Math.abs(elapsedSeconds - 1) / 1 > 0.1) console.warn('timer drift - elapsed: ' + elapsedSeconds);
 		setState({ ...state, remaining: state.remaining - 1 });
-	}, 1000, state.timerActive && state.remaining > 0);
+	}, 1000, matchStatus.started && state.remaining > 0);
 
 	// add an event to the journal
 	const addEvent = (key, display, data, currentEvent) => {
@@ -78,6 +76,7 @@ export function Run(props) {
 
 		newRunState.journal.push({
 			event: key,
+			time: totalTime - state.remaining,
 			data: data ? data : undefined
 		});
 
@@ -133,6 +132,26 @@ export function Run(props) {
 	// formatted last event text
 	const lastEventDisplay = state.readableEventLog.length > 0 ? 'Last Event: ' + state.readableEventLog[state.readableEventLog.length - 1] : 'No Events';
 
+	if (!state.loadoutShown && matchStatus.started) {
+		let newState = { ...state, loadoutShown: true };
+
+		if (runState.journal.length === 1) {
+
+			let lastEventKey = runState.journal[0].event;
+			let matchingTopEvents = template.scout.run.filter(event => (event.key === lastEventKey));
+
+			if (matchingTopEvents.length === 1) {
+				newState.currentEvent = matchingTopEvents[0];
+				newState.readableEventLog.push(matchingTopEvents[0].display);
+
+				setChildOpen(true);
+				setState(newState);
+			}
+		}
+
+		setState(newState);
+	}
+
 	return (
 		<div className={classes.root}>
 			<Card className={classes.card}>
@@ -162,7 +181,7 @@ export function Run(props) {
 									onClick={() => {
 										addEvent(event.key, event.display, null, event);
 									}}
-									disabled={!(150 - state.remaining >= event.activeTime) || (state.remaining === 0 && event.endDisable)}
+									disabled={!(totalTime - state.remaining >= event.activeTime) || (state.remaining === 0 && event.endDisable)}
 									>
 										{event.display}
 									</Button>
@@ -190,6 +209,17 @@ export function Run(props) {
 						</div>
 					</div>
 				</CardContent>
+				<CardActions>
+					<span className={classes.spacer} />
+					<Button
+					variant={"contained"}
+					color={"primary"}
+					disabled={state.remaining > 0}
+					onClick={afterMatch}
+					>
+						Next
+					</Button>
+				</CardActions>
 			</Card>
 			<ChildDialog
 			open={childOpen}

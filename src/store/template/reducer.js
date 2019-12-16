@@ -37,11 +37,6 @@ const dummyTemplate = {
     ],
     loadouts: [
       {
-        _id: '5df553b7ba24039bfcc815eb',
-        display: 'None',
-        event: null
-      },
-      {
         _id: '5df553b7ba24039bfcc815ea',
         display: 'Hatch',
         event: 'get_hatch'
