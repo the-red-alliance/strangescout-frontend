@@ -164,7 +164,7 @@ export function pushLocalRuns(token) {
 					token,
 					[{name: 'Content-type', value: 'application/json'}]
 				).then(result => {
-					if (result.status === 200) {
+					if (result.status === 202) {
 						db.localRuns.delete(run.localId).then(() => {
 							count = count + 1;
 							if (count === runs.length) {
