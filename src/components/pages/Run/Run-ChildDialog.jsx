@@ -19,6 +19,7 @@ const useStyles = makeStyles(theme => ({
 		gridTemplateColumns: "1fr",
 		gridTemplateRows: props => {
 			let rows = "1fr";
+			if (props.canHold) rows = rows + " 1fr";
 			let i;
 			for (i = 0; i < props.children.length; i++) {
 				rows = rows + " 1fr";
@@ -35,11 +36,12 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export function ChildDialog(props) {
-	const { open, currentEvent, onChild, onUndo } = props;
+	const { open, currentEvent, onChild, onUndo, onHold } = props;
 	const children = currentEvent ? currentEvent.children : [];
+	const canHold = currentEvent ? currentEvent.canHold : false;
 
 	// lets us use the old styles
-	const classes = useStyles({ children: children });
+	const classes = useStyles({ canHold: canHold, children: children });
 
 	const handleClick = child => {
 		onChild(child.key, child.display);
@@ -70,13 +72,34 @@ export function ChildDialog(props) {
 							</div>
 						);
 					})}
+					{ canHold &&
+						<div
+						style={{
+							display: 'flex',
+							justifyContent: 'center',
+							alignItems: 'center',
+							gridColumn: "1 / 2",
+							gridRow: (children.length + 1) + " / " + (children.length + 2),
+						}}
+						>
+							<Button
+							variant="contained"
+							color="primary"
+							className={classes.button}
+							onClick={() => onHold(currentEvent.key)}
+							disabled={children.length < 1}
+							>
+								Hold
+							</Button>
+						</div>
+					}
 					<div
 					style={{
 						display: 'flex',
 						justifyContent: 'center',
 						alignItems: 'center',
 						gridColumn: "1 / 2",
-						gridRow: (children.length + 1) + " / " + (children.length + 2),
+						gridRow: (children.length + (canHold ? 2 : 1)) + " / " + (children.length + (canHold ? 3 : 2)),
 					}}
 					>
 						<Button

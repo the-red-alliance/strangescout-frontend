@@ -53,6 +53,7 @@ export function Run(props) {
 	const initialState = {
 		readableEventLog: [],
 		currentEvent: undefined,
+		holding: '',
 		loadoutShown: false,
 	};
 	const [ state, setState ] = useState(initialState);
@@ -74,13 +75,17 @@ export function Run(props) {
 		let newRunState = { ...runState };
 		let newState = { ...state };
 
-		newRunState.journal.push({
-			event: key,
-			time: totalTime - remainingTime,
-			data: data ? data : undefined
-		});
-
-		newState.readableEventLog.push(display);
+		if (Boolean(state.holding)) {
+			newState.holding = false;
+		} else {
+			newRunState.journal.push({
+				event: key,
+				time: totalTime - remainingTime,
+				data: data ? data : undefined
+			});
+			newState.readableEventLog.push(display);
+		}
+		
 		if (!Boolean(currentEvent)) {
 			setTimeout(() => {
 				setState({ ...state, currentEvent: undefined });
@@ -129,9 +134,21 @@ export function Run(props) {
 		setRunState(newRunState);
 	};
 
+	const onHold = (key) => {
+		let newState = { ...state, holding: key };
+
+		setTimeout(() => {
+			setState({ ...state, holding: key, currentEvent: undefined });
+		}, 200);
+
+		setChildOpen(false);
+		setState(newState);
+	}
+
 	// formatted last event text
 	const lastEventDisplay = state.readableEventLog.length > 0 ? 'Last Event: ' + state.readableEventLog[state.readableEventLog.length - 1] : 'No Events';
 
+	// display event from loadout if necessary
 	if (!state.loadoutShown && matchStatus.started) {
 		let newState = { ...state, loadoutShown: true };
 
@@ -181,7 +198,7 @@ export function Run(props) {
 									onClick={() => {
 										addEvent(event.key, event.display, null, event);
 									}}
-									disabled={!(totalTime - remainingTime >= event.activeTime) || (remainingTime === 0 && event.endDisable)}
+									disabled={!(totalTime - remainingTime >= event.activeTime) || (remainingTime === 0 && event.endDisable) || (!event.ignoreHold && Boolean(state.holding) && state.holding !== event.key)}
 									>
 										{event.display}
 									</Button>
@@ -224,6 +241,7 @@ export function Run(props) {
 			<ChildDialog
 			open={childOpen}
 			onChild={addEvent}
+			onHold={onHold}
 			onUndo={undoEvent}
 			currentEvent={state.currentEvent}
 			/>
