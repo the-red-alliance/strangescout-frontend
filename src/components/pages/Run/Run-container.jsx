@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Redirect, useHistory } from 'react-router-dom';
 
 import { sendNotification } from '../../../store/notifications/actions';
-import { storeLocalRun, syncRuns } from '../../../utils/database';
+import { storeLocalRun, syncData } from '../../../utils/database';
 
 import { Run } from './Run-content.jsx';
 import { SetupDialog } from './Run-SetupDialog.jsx';
@@ -60,7 +60,7 @@ export function RunContainer(props) {
 		storeLocalRun(runState).then(() => {
 			history.push('/');
 
-			syncRuns(props.user.session.token).then(() => {
+			syncData(props.user.session.token).then(() => {
 				props.dispatch(sendNotification({
 					variant: 'success',
 					text: 'Successfully synced data!'

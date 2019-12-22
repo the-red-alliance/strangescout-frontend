@@ -7,12 +7,13 @@ const versions = [
 		version: 1,
 		stores: {
 			runs: '&_id, team, match, updated',
-			localRuns: '++localId, team, match',
+			runQueue: '++localId, team, match',
+			processedTeams: '&_id, team, matches, updated',
 		},
 	},
 ];
 
-export function clearRuns() {
+export function clearData() {
 	const db = new Dexie('strangescout');
 	db.delete();
 };
@@ -138,7 +139,7 @@ export function storeLocalRun(run) {
 			db.version(version.version).stores(version.stores);
 		});
 
-		db.localRuns.put(run).then(() => {
+		db.runQueue.put(run).then(() => {
 			resolve();
 		}, (e) => {
 			console.error('failed to store local run', e);
@@ -154,7 +155,7 @@ export function pushLocalRuns(token) {
 			db.version(version.version).stores(version.stores);
 		});
 
-		db.localRuns.toArray().then(runs => {
+		db.runQueue.toArray().then(runs => {
 			if (runs.length === 0) resolve();
 			let count = 0;
 			runs.forEach(run => {
@@ -165,7 +166,7 @@ export function pushLocalRuns(token) {
 					[{name: 'Content-type', value: 'application/json'}]
 				).then(result => {
 					if (result.status === 202) {
-						db.localRuns.delete(run.localId).then(() => {
+						db.runQueue.delete(run.localId).then(() => {
 							count = count + 1;
 							if (count === runs.length) {
 								resolve();
@@ -190,20 +191,142 @@ export function pushLocalRuns(token) {
 	});
 };
 
-export function syncRuns(token) {
+export function mostRecentProcessedTeam() {
+	return new Promise((resolve, reject) => {
+		const db = new Dexie('strangescout');
+		versions.forEach(version => {
+			db.version(version.version).stores(version.stores);
+		});
+
+		db.processedTeams.orderBy('updated').last().then(object => {
+			if (object) {
+				console.log('last updated: ', object.updated);
+				resolve(object.updated);
+			} else {
+				console.log('could not find last updated processed team');
+				resolve();
+			}
+		}, (e) => {
+			console.error('error finding last modified processed team', e);
+			reject();
+		});
+	});
+};
+
+export function fetchNewProcessedTeams(token) {
+	return new Promise((resolve, reject) => {
+		const db = new Dexie('strangescout');
+		versions.forEach(version => {
+			db.version(version.version).stores(version.stores);
+		});
+
+		mostRecentProcessedTeam().then((lastUpdated) => {
+			const url = lastUpdated ? window.origin + '/api/processedTeams?updated=' + JSON.stringify(lastUpdated) : '/api/processedTeams';
+			get(
+				url,
+				token,
+				[{name: 'Content-type', value: 'application/json'}]
+			).then((result) => {
+				if (result.status === 200) {
+					let docs;
+					try {
+						docs = JSON.parse(result.response, dateParser);
+
+						try {
+							db.processedTeams.bulkPut(docs);
+							resolve();
+						} catch (e) {
+							console.error('failed to save processed docs', e);
+							reject('failed to save processed');
+						}
+					} catch (e) {
+						console.error('failed to parse processed docs', e);
+						reject('failed to parse processed');
+					}
+				} else {
+					console.error('failed to get processed teams from server', result);
+					reject('failed to fetch');
+				}
+			});
+		}, () => {
+			console.error('error finding last modified processed');
+			reject('couldn\'t find last modified processed');
+		});
+	});
+};
+
+export function fetchRemovedProcessedTeams(token) {
+	return new Promise((resolve, reject) => {
+		const db = new Dexie('strangescout');
+		versions.forEach(version => {
+			db.version(version.version).stores(version.stores);
+		});
+
+		get(
+			'/api/processedTeams/ids',
+			token,
+			[{name: 'Content-type', value: 'application/json'}]
+		).then((result) => {
+			if (result.status === 200) {
+				let idList;
+				try {
+					// parse in list of remaining IDs
+					idList = JSON.parse(result.response);
+
+					// get current primary keys
+					// (returns primary keys of all docs where team > 0, aka. all docs)
+					// in theory going table -> collection -> keys will be faster than going table -> array -> keys
+					db.processedTeams.where('team').above(0).primaryKeys().then(keys => {
+				//	db.runs.toArray().then(runs => {
+					//	let keys = runs.map(item => item._id);
+						// do we have any keys locally that aren't in the master db?
+						let deletedkeys = keys.filter(n => !idList.includes(n));
+
+						// delete if so
+						try {
+							db.processedTeams.bulkDelete(deletedkeys);
+							resolve();
+						} catch (e) {
+							console.error('failed to delete processed docs', e);
+							reject('failed to delete processed');
+						}
+					}, (e2) => {
+						console.error('failed to get processed keys', e2);
+						reject('failed to get keys processed');
+					});
+				} catch (e) {
+					console.error('failed to parse processed ids', e);
+					reject('failed to parse ids processed');
+				}
+			} else {
+				reject('failed to fetch deleted ids processed');
+			}
+		});
+	});
+};
+
+export function syncData(token) {
 	return new Promise((resolve, reject) => {
 		pushLocalRuns(token).then(() => {
 			fetchNewRuns(token).then(() => {
 				fetchRemovedRuns(token).then(() => {
-					resolve();
-				}, error => {
-					reject(error);
+					fetchNewProcessedTeams(token).then(() => {
+						fetchRemovedProcessedTeams(token).then(() => {
+							resolve();
+						}, fetchRemovedProcessedError => {
+							reject(fetchRemovedProcessedError);
+						});
+					}, fetchProcessedError => {
+						reject(fetchProcessedError);
+					});
+				}, fetchRemovedError => {
+					reject(fetchRemovedError);
 				});
-			}, error => {
-				reject(error);
+			}, fetchError => {
+				reject(fetchError);
 			});
-		}, error => {
-			reject(error);
+		}, pushError => {
+			reject(pushError);
 		});
 	});
 };

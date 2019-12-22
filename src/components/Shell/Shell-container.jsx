@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { logout } from '../../store/user/actions';
 import { sendNotification } from '../../store/notifications/actions';
 
-import { clearRuns } from '../../utils/database';
+import { clearData } from '../../utils/database';
 
 // import shell content
 import { Shell } from './Shell-content.jsx';
@@ -25,7 +25,7 @@ function ShellContainer(props) {
 			variant: 'success',
 			text: 'Logged out!'
 		}));
-		clearRuns();
+		clearData();
 	};
 
 	return (
