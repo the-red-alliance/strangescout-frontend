@@ -123,7 +123,7 @@ export function Home(props) {
 						}
 						{ admin &&
 							<div className={invite ? classes.row4 : classes.row3}>
-								<Button className={classes.button} variant="contained" color="secondary">
+								<Button className={classes.button} variant="contained" color="secondary" onClick={() => redirect('/admin')}>
 									Admin Panel
 								</Button>
 							</div>
