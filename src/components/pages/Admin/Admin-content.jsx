@@ -120,7 +120,7 @@ export function Admin(props) {
 					variant={"contained"}
 					color={"primary"}
 					disabled={!templateIsValid()}
-					onClick={() => {props.onSubmit(state.template)}}
+					onClick={() => {props.onSubmit(JSON.parse(state.template))}}
 					>
 						Submit
 					</Button>
