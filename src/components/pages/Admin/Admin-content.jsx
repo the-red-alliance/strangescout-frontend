@@ -65,7 +65,9 @@ export function Admin(props) {
 	const initialState = {
 		template: props.template ? JSON.stringify(props.template, (key, val) => {
 			if (key === '_id') {
-				return undefined
+				return undefined;
+			} else if (key === '__v') {
+				return undefined;
 			} else return val;
 		}, 4) : '',
 	};
@@ -118,7 +120,7 @@ export function Admin(props) {
 					variant={"contained"}
 					color={"primary"}
 					disabled={!templateIsValid()}
-					onClick={() => {props.onSubmit(state)}}
+					onClick={() => {props.onSubmit(state.template)}}
 					>
 						Submit
 					</Button>
