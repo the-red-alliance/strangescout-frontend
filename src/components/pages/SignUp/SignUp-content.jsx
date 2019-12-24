@@ -143,6 +143,7 @@ export function SignUp(props) {
 							<Input
 							id="email"
 							type="text"
+							aria-label="email-input"
 							value={state.newUser.email}
 							onChange={handleChange('email') /* triger handleChange fn from parent */}
 							/>
@@ -161,6 +162,7 @@ export function SignUp(props) {
 							<Input
 							id="password"
 							type={state.showPassword ? 'text' : 'password' /* if `showPassword` this is a text field, else an obscured password field */}
+							aria-label="password-input"
 							value={state.newUser.password}
 							onChange={handleChange('password')}
 							endAdornment={
@@ -188,6 +190,7 @@ export function SignUp(props) {
 							<Input
 							id="code"
 							type="text"
+							aria-label="invite-code-input"
 							value={state.newUser.code}
 							onChange={handleChange('code') /* triger handleChange fn from parent */}
 							/>

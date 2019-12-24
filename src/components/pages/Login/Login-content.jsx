@@ -132,6 +132,7 @@ export function Login(props) {
 							<Input
 							id="email"
 							type="text"
+							aria-label="email-input"
 							value={state.user.email}
 							onChange={handleChange('email') /* triger handleChange fn from parent */}
 							/>
@@ -150,6 +151,7 @@ export function Login(props) {
 							<Input
 							id="password"
 							type={state.showPassword ? 'text' : 'password' /* if `showPassword` this is a text field, else an obscured password field */}
+							aria-label="password-input"
 							value={state.user.password}
 							onChange={handleChange('password')}
 							endAdornment={
