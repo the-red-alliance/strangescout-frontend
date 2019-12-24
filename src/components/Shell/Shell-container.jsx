@@ -25,6 +25,8 @@ function ShellContainer(props) {
 			variant: 'success',
 			text: 'Logged out!'
 		}));
+		localStorage.removeItem('template');
+		localStorage.removeItem('session');
 		clearData();
 	};
 
