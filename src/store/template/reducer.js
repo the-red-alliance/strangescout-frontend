@@ -51,6 +51,7 @@ const dummyTemplate = {
       _id: '5df553b7ba24039bfcc815ec',
       run: [
         {
+          type: 'item',
           activeTime: 0,
           endDisable: true,
           children: [
@@ -87,6 +88,7 @@ const dummyTemplate = {
           key: 'get_hatch'
         },
         {
+          type: 'item',
           activeTime: 0,
           endDisable: true,
           children: [
@@ -123,6 +125,7 @@ const dummyTemplate = {
           key: 'get_cargo'
         },
         {
+          type: 'item',
           activeTime: 90,
           endDisable: false,
           children: [
@@ -147,6 +150,17 @@ const dummyTemplate = {
           canHold: false,
           ignoreHold: true,
           key: 'start_climb'
+        },
+        {
+          type: 'duration',
+          display: 'Start Defending',
+          endDisplay: 'Stop Defending',
+          activeTime: 0,
+          endDisable: true,
+          canHold: false,
+          ignoreHold: true,
+          key: 'start_defend',
+          endKey: 'end_defend'
         }
       ]
     },

@@ -55,6 +55,7 @@ export function Run(props) {
 		currentEvent: undefined,
 		holding: '',
 		loadoutShown: false,
+		activeDurationEvents: {},
 	};
 	const [ state, setState ] = useState(initialState);
 	// separate child open state
@@ -143,7 +144,33 @@ export function Run(props) {
 
 		setChildOpen(false);
 		setState(newState);
-	}
+	};
+
+	const onDurationEvent = (key, endKey, display, endDisplay, data) => {
+		let newState = { ...state };
+		let newRunState = { ...runState };
+
+		if (state.activeDurationEvents[key]) {
+			state.activeDurationEvents[key] = false;
+			newState.readableEventLog.push(endDisplay);
+			newRunState.journal.push({
+				event: endKey,
+				time: totalTime - remainingTime,
+				data: data ? data : undefined
+			});
+		} else {
+			state.activeDurationEvents[key] = true;
+			newState.readableEventLog.push(display);
+			newRunState.journal.push({
+				event: key,
+				time: totalTime - remainingTime,
+				data: data ? data : undefined
+			});
+		}
+
+		setState(newState);
+		setRunState(newRunState);
+	};
 
 	// formatted last event text
 	const lastEventDisplay = state.readableEventLog.length > 0 ? 'Last Event: ' + state.readableEventLog[state.readableEventLog.length - 1] : 'No Events';
@@ -180,30 +207,57 @@ export function Run(props) {
 				<CardContent>
 					<div className={classes.container}>
 						{template.scout.run.map((event, i) => {
-							return (
-								<div
-								key={event.key}
-								style={{
-									display: 'flex',
-									justifyContent: 'center',
-									alignItems: 'center',
-									gridColumn: "1 / 2",
-									gridRow: (i + 1) + " / " + (i + 2),
-								}}
-								>
-									<Button
-									variant="contained"
-									color="primary"
-									className={classes.button}
-									onClick={() => {
-										addEvent(event.key, event.display, null, event);
+							if (event.type === 'item') {
+								return (
+									<div
+									key={event.key}
+									style={{
+										display: 'flex',
+										justifyContent: 'center',
+										alignItems: 'center',
+										gridColumn: "1 / 2",
+										gridRow: (i + 1) + " / " + (i + 2),
 									}}
-									disabled={!(totalTime - remainingTime >= event.activeTime) || (remainingTime === 0 && event.endDisable) || (!event.ignoreHold && Boolean(state.holding) && state.holding !== event.key)}
 									>
-										{event.display}
-									</Button>
-								</div>
-							);
+										<Button
+										variant="contained"
+										color="primary"
+										className={classes.button}
+										onClick={() => {
+											addEvent(event.key, event.display, null, event);
+										}}
+										disabled={!(totalTime - remainingTime >= event.activeTime) || (remainingTime === 0 && event.endDisable) || (!event.ignoreHold && Boolean(state.holding) && state.holding !== event.key)}
+										>
+											{event.display}
+										</Button>
+									</div>
+								);
+							} else if (event.type === 'duration') {
+								return (
+									<div
+									key={event.key}
+									style={{
+										display: 'flex',
+										justifyContent: 'center',
+										alignItems: 'center',
+										gridColumn: "1 / 2",
+										gridRow: (i + 1) + " / " + (i + 2),
+									}}
+									>
+										<Button
+										variant="contained"
+										color="primary"
+										className={classes.button}
+										onClick={() => {
+											onDurationEvent(event.key, event.endKey, event.display, event.endDisplay);
+										}}
+										disabled={!(totalTime - remainingTime >= event.activeTime) || (remainingTime === 0 && event.endDisable) || (!event.ignoreHold && Boolean(state.holding) && state.holding !== event.key)}
+										>
+											{state.activeDurationEvents[event.key] ? event.endDisplay : event.display }
+										</Button>
+									</div>
+								);
+							} else return <React.Fragment key={event.key} />;
 						})}
 						<div
 						style={{
