@@ -110,8 +110,8 @@ export function Home(props) {
 							</Button>
 						</div>
 						<div className={classes.row2}>
-							<Button className={classes.button} variant="contained" color="primary">
-								View the Data
+							<Button className={classes.button} variant="contained" color="primary" onClick={() => redirect('/data')}>
+								Data Dashboard
 							</Button>
 						</div>
 						{ invite &&
