@@ -5,7 +5,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import { Card, CardHeader, CardContent, CardActions } from '@material-ui/core';
 import { Button } from '@material-ui/core';
 
-import { ChildDialog } from './Run-ChildDialog.jsx';
+import SingleItem from './Events/SingleItem';
+import Duration from './Events/Duration';
 
 // create styles
 const useStyles = makeStyles(theme => ({
@@ -58,11 +59,6 @@ export function Run(props) {
 		activeDurationEvents: {},
 	};
 	const [ state, setState ] = useState(initialState);
-	// separate child open state
-	// we need to close child dialog first then delay for animation times then clear the content
-	// if they're in the same state the delay reads state from when it was started,
-	// resulting in an empty dialog re-opening
-	const [ childOpen, setChildOpen ] = useState(false);
 	const [ remainingTime, setRemainingTime ] = useState(totalTime);
 
 	// timer hook
@@ -71,37 +67,11 @@ export function Run(props) {
 		setRemainingTime(remainingTime - 1);
 	}, 1000, matchStatus.started && remainingTime > 0);
 
-	// add an event to the journal
-	const addEvent = (key, display, data, currentEvent) => {
-		let newRunState = { ...runState };
-		let newState = { ...state };
+	// formatted last event text
+	const lastEventDisplay = state.readableEventLog.length > 0 ? 'Last Event: ' + state.readableEventLog[state.readableEventLog.length - 1] : 'No Events';
 
-		if (Boolean(state.holding)) {
-			newState.holding = false;
-		} else {
-			newRunState.journal.push({
-				event: key,
-				time: totalTime - remainingTime,
-				data: data ? data : undefined
-			});
-			newState.readableEventLog.push(display);
-		}
-		
-		if (!Boolean(currentEvent)) {
-			setTimeout(() => {
-				setState({ ...state, currentEvent: undefined });
-			}, 200);
-		} else {
-			newState.currentEvent = currentEvent;
-		}
-		setChildOpen(Boolean(currentEvent));
-
-		setRunState(newRunState);
-		setState(newState);
-	};
-
-	// undo an event
-	const undoEvent = () => {
+	// undo an event from a neutral state
+	const undo = () => {
 		if (runState.journal.length < 1) return;
 
 		let newState = {
@@ -109,7 +79,7 @@ export function Run(props) {
 			currentEvent: undefined,
 		};
 
-		let newChildOpen = false;
+		//let newChildOpen = false;
 
 		let newRunState = {
 			...runState,
@@ -126,54 +96,14 @@ export function Run(props) {
 
 			if (matchingTopEvents.length === 1) {
 				newState.currentEvent = matchingTopEvents[0];
-				newChildOpen = true;
+				//newChildOpen = true;
 			}
 		}
 
-		setChildOpen(newChildOpen);
+		//setChildOpen(newChildOpen);
 		setState(newState);
 		setRunState(newRunState);
 	};
-
-	const onHold = (key) => {
-		let newState = { ...state, holding: key };
-
-		setTimeout(() => {
-			setState({ ...state, holding: key, currentEvent: undefined });
-		}, 200);
-
-		setChildOpen(false);
-		setState(newState);
-	};
-
-	const onDurationEvent = (key, endKey, display, endDisplay, data) => {
-		let newState = { ...state };
-		let newRunState = { ...runState };
-
-		if (state.activeDurationEvents[key]) {
-			state.activeDurationEvents[key] = false;
-			newState.readableEventLog.push(endDisplay);
-			newRunState.journal.push({
-				event: endKey,
-				time: totalTime - remainingTime,
-				data: data ? data : undefined
-			});
-		} else {
-			state.activeDurationEvents[key] = true;
-			newState.readableEventLog.push(display);
-			newRunState.journal.push({
-				event: key,
-				time: totalTime - remainingTime,
-				data: data ? data : undefined
-			});
-		}
-
-		setState(newState);
-		setRunState(newRunState);
-	};
-
-	// formatted last event text
-	const lastEventDisplay = state.readableEventLog.length > 0 ? 'Last Event: ' + state.readableEventLog[state.readableEventLog.length - 1] : 'No Events';
 
 	// display event from loadout if necessary
 	if (!state.loadoutShown && matchStatus.started) {
@@ -188,7 +118,6 @@ export function Run(props) {
 				newState.currentEvent = matchingTopEvents[0];
 				newState.readableEventLog.push(matchingTopEvents[0].display);
 
-				setChildOpen(true);
 				setState(newState);
 			}
 		}
@@ -206,59 +135,54 @@ export function Run(props) {
 				/>
 				<CardContent>
 					<div className={classes.container}>
-						{template.scout.run.map((event, i) => {
-							if (event.type === 'item') {
-								return (
-									<div
-									key={event.key}
-									style={{
-										display: 'flex',
-										justifyContent: 'center',
-										alignItems: 'center',
-										gridColumn: "1 / 2",
-										gridRow: (i + 1) + " / " + (i + 2),
-									}}
-									>
-										<Button
-										variant="contained"
-										color="primary"
-										className={classes.button}
-										onClick={() => {
-											addEvent(event.key, event.display, null, event);
-										}}
-										disabled={!(totalTime - remainingTime >= event.activeTime) || (remainingTime === 0 && event.endDisable) || (!event.ignoreHold && Boolean(state.holding) && state.holding !== event.key)}
-										>
-											{event.display}
-										</Button>
-									</div>
-								);
-							} else if (event.type === 'duration') {
-								return (
-									<div
-									key={event.key}
-									style={{
-										display: 'flex',
-										justifyContent: 'center',
-										alignItems: 'center',
-										gridColumn: "1 / 2",
-										gridRow: (i + 1) + " / " + (i + 2),
-									}}
-									>
-										<Button
-										variant="contained"
-										color="primary"
-										className={classes.button}
-										onClick={() => {
-											onDurationEvent(event.key, event.endKey, event.display, event.endDisplay);
-										}}
-										disabled={!(totalTime - remainingTime >= event.activeTime) || (remainingTime === 0 && event.endDisable) || (!event.ignoreHold && Boolean(state.holding) && state.holding !== event.key)}
-										>
-											{state.activeDurationEvents[event.key] ? event.endDisplay : event.display }
-										</Button>
-									</div>
-								);
-							} else return <React.Fragment key={event.key} />;
-						})}
+						{template.scout.run.map((event, i) => (
+							<div
+							key={event.key}
+							style={{
+								display: 'flex',
+								justifyContent: 'center',
+								alignItems: 'center',
+								gridColumn: "1 / 2",
+								gridRow: (i + 1) + " / " + (i + 2),
+							}}
+							>
+								{(() => {
+									switch (event.type) {
+										case 'item': return (
+											<SingleItem
+											event={event}
+											totalTime={totalTime}
+											remainingTime={remainingTime}
+											renderState={state}
+											setRenderState={setState}
+											runState={runState}
+											setRunState={setRunState}
+											/>
+										);
+										case 'duration': return (
+											<Duration
+											event={event}
+											totalTime={totalTime}
+											remainingTime={remainingTime}
+											renderState={state}
+											setRenderState={setState}
+											runState={runState}
+											setRunState={setRunState}
+											/>
+										);
+										default: return (
+											<Button
+											variant="contained"
+											className={classes.button}
+											disabled={true}
+											>
+												{event.display}
+											</Button>
+										);
+									}
+								})()}
+							</div>
+						))}
 						<div
 						style={{
 							display: 'flex',
@@ -272,7 +196,7 @@ export function Run(props) {
 							variant="contained"
 							color="secondary"
 							className={classes.button}
-							onClick={undoEvent}
+							onClick={undo}
 							disabled={runState.journal.length < 1}
 							>
 								Undo
@@ -292,13 +216,6 @@ export function Run(props) {
 					</Button>
 				</CardActions>
 			</Card>
-			<ChildDialog
-			open={childOpen}
-			onChild={addEvent}
-			onHold={onHold}
-			onUndo={undoEvent}
-			currentEvent={state.currentEvent}
-			/>
 		</div>
 	);
 };

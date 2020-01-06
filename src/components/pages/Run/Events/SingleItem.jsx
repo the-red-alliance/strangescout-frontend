@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 
 import { Dialog, DialogContent } from '@material-ui/core';
@@ -35,17 +35,11 @@ const useStyles = makeStyles(theme => ({
 	}
 }));
 
-export function ChildDialog(props) {
-	const { open, currentEvent, onChild, onUndo, onHold } = props;
-	const children = currentEvent ? currentEvent.children : [];
-	const canHold = currentEvent ? currentEvent.canHold : false;
+function ChildDialog(props) {
+	const { open, children, canHold, onChild, onUndo, onHold } = props;
 
 	// lets us use the old styles
 	const classes = useStyles({ canHold: canHold, children: children });
-
-	const handleClick = child => {
-		onChild(child.key, child.display);
-	};
 
 	return (
 		<Dialog open={open} classes={{ paper: classes.dialog }}>
@@ -65,7 +59,7 @@ export function ChildDialog(props) {
 								<Button
 								variant="contained"
 								className={classes.button}
-								onClick={() => handleClick(child)}
+								onClick={() => onChild(child.key, child.display)}
 								>
 									{child.display}
 								</Button>
@@ -86,7 +80,7 @@ export function ChildDialog(props) {
 							variant="contained"
 							color="primary"
 							className={classes.button}
-							onClick={() => onHold(currentEvent.key)}
+							onClick={onHold}
 							disabled={children.length < 1}
 							>
 								Hold
@@ -118,4 +112,66 @@ export function ChildDialog(props) {
 	);
 };
 
-export default ChildDialog;
+export function SingleItem(props) {
+	const { event, totalTime, remainingTime, renderState, setRenderState, runState, setRunState } = props;
+
+	const children = event ? event.children : [];
+	const canHold = event ? event.canHold : false;
+
+	const classes = useStyles({ canHold: canHold, children: children });
+
+	const [ open, setOpen ] = useState(false);
+
+	const onTop = () => {
+		let newRunState = { ...runState };
+		let newRenderState = { ...renderState };
+
+		newRunState.journal.push({
+			event: event.key,
+			time: totalTime - remainingTime
+		});
+		newRenderState.readableEventLog.push(event.display);
+		
+		setOpen(true);
+		setRunState(newRunState);
+		setRenderState(newRenderState);
+	};
+	
+	const onChild = (key, display) => {
+		let newRunState = { ...runState };
+		let newRenderState = { ...renderState };
+
+		newRunState.journal.push({
+			event: key,
+			time: totalTime - remainingTime
+		});
+		newRenderState.readableEventLog.push(display);
+		
+		setOpen(false);
+		setRunState(newRunState);
+		setRenderState(newRenderState);
+	};
+
+	return (
+		<React.Fragment>
+		<ChildDialog open={open} children={children} canHold={canHold} onChild={onChild} />
+		<Button
+		variant="contained"
+		color="primary"
+		className={classes.button}
+		onClick={onTop}
+		disabled={
+			!(totalTime - remainingTime >= event.activeTime)
+			||
+			(remainingTime === 0 && event.endDisable)
+			||
+			(!event.ignoreHold && Boolean(renderState.holding) && renderState.holding !== event.key)
+		}
+		>
+			{event.display}
+		</Button>
+		</React.Fragment>
+	);
+};
+
+export default SingleItem;

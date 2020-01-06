@@ -18,22 +18,30 @@ function mapStateToProps(state) {
 };
 
 export function RunContainer(props) {
+	const { template, user } = props;
+	// state for mtch status
+	// has the match started yet
+	// is the match completed
+	// has the loadout been shown if needed
 	const [ matchStatus, setMatchStatus ] = useState({
 		started: false,
 		completed: false,
 		loadoutShown: false
 	});
 
+	// dialogs open states
 	const [ dialogs, setDialogs ] = useState({
 		setupDialog: true,
 		finalizeDialog: false,
 	});
 
+	// current state of the run
 	const [ runState, setRunState ] = useState({
 		team: '',
 		match: '',
 		position: '',
 		journal: [],
+		endgameFields: {},
 		notes: '',
 	});
 
@@ -41,18 +49,24 @@ export function RunContainer(props) {
 	const history = useHistory();
 
 	// ensure we actually have a template to use, else go blank
-	if (Object.entries(props.template).length === 0) return (<React.Fragment />);
+	if (Object.entries(template).length === 0) return (<React.Fragment />);
 
 	// redirect to the login page if the user isn't logged in
-	if (process.env.NODE_ENV === 'production' && !props.user.loggedin) return <Redirect to={"/login"} />;
+	if (process.env.NODE_ENV === 'production' && !user.loggedin) return <Redirect to={"/login"} />;
 
+	// start the match
 	const startMatch = () => {
+		// close the setup dialog
 		setDialogs({ ...dialogs, setupDialog: false });
+		// set match status to started
 		setMatchStatus({ ...matchStatus, started: true });
 	};
 
+	// end the match
 	const endMatch = () => {
+		// set the finalize dialog to open
 		setDialogs({ ...dialogs, finalizeDialog: true });
+		// set the match status to completed
 		setMatchStatus({ ...matchStatus, completed: true });
 	};
 
@@ -60,7 +74,7 @@ export function RunContainer(props) {
 		storeLocalRun(runState).then(() => {
 			history.push('/');
 
-			syncData(props.user.session.token).then(() => {
+			syncData(user.session.token).then(() => {
 				props.dispatch(sendNotification({
 					variant: 'success',
 					text: 'Successfully synced data!'
@@ -84,7 +98,7 @@ export function RunContainer(props) {
 	return (
 		<React.Fragment>
 			<Run
-			template={props.template}
+			template={template}
 			totalTime={150}
 			matchStatus={matchStatus}
 			setMatchStatus={setMatchStatus}
@@ -94,7 +108,7 @@ export function RunContainer(props) {
 			/>
 			<SetupDialog
 			open={dialogs.setupDialog}
-			template={props.template}
+			template={template}
 			startMatchAction={startMatch}
 			runState={runState}
 			setRunState={setRunState}
