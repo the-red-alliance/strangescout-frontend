@@ -160,24 +160,46 @@ export function SingleItem(props) {
 		setRenderState(newRenderState);
 	};
 
+	const onUndo = () => {
+		if (runState.journal.length < 1) return;
+
+		let newRenderState = {
+			...renderState,
+			lastUndo: runState.journal[runState.journal.length - 1],
+		};
+
+		let newRunState = {
+			...runState,
+			journal: [
+				...runState.journal
+			],
+		};
+		newRunState.journal.pop();
+		newRenderState.readableEventLog.pop();
+
+		setRenderState(newRenderState);
+		setRunState(newRunState);
+		setOpen(false);
+	};
+
 	return (
 		<React.Fragment>
-		<ChildDialog open={open} children={children} canHold={canHold} onChild={onChild} />
-		<Button
-		variant="contained"
-		color="primary"
-		className={classes.button}
-		onClick={onTop}
-		disabled={
-			!(totalTime - remainingTime >= event.activeTime)
-			||
-			(remainingTime === 0 && event.endDisable)
-			||
-			(!event.ignoreHold && Boolean(renderState.holding) && renderState.holding !== event.key)
-		}
-		>
-			{event.display}
-		</Button>
+			<ChildDialog open={open} children={children} canHold={canHold} onChild={onChild} onUndo={onUndo} />
+			<Button
+			variant="contained"
+			color="primary"
+			className={classes.button}
+			onClick={onTop}
+			disabled={
+				!(totalTime - remainingTime >= event.activeTime)
+				||
+				(remainingTime === 0 && event.endDisable)
+				||
+				(!event.ignoreHold && Boolean(renderState.holding) && renderState.holding !== event.key)
+			}
+			>
+				{event.display}
+			</Button>
 		</React.Fragment>
 	);
 };

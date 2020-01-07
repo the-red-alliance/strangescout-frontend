@@ -14,7 +14,17 @@ export function SingleItem(props) {
 	const { event, totalTime, remainingTime, renderState, setRenderState, runState, setRunState } = props;
 
 	const classes = useStyles();
-	const [ toggled, setToggled ] = useState(false);
+	const [ active, setActive ] = useState(false);
+	const [ localLastUndo, setLocalLastUndo ] = useState(null);
+
+	if (localLastUndo !== renderState.lastUndo) {
+		setLocalLastUndo(renderState.lastUndo);
+		if (renderState.lastUndo.event === event.endKey) {
+			setActive(true);
+		} else if (renderState.lastUndo.event === event.key) {
+			setActive(false);
+		}
+	}
 
 	const onClick = () => {
 		let newRunState = { ...runState };
@@ -26,7 +36,7 @@ export function SingleItem(props) {
 		};
 		let readableEvent = event.display;
 
-		if (toggled) {
+		if (active) {
 			journalEvent.event = event.endKey;
 			readableEvent = event.endDisplay;
 		}
@@ -35,7 +45,7 @@ export function SingleItem(props) {
 		
 		setRunState(newRunState);
 		setRenderState(newRenderState);
-		setToggled(!toggled);
+		setActive(!active);
 	};
 
 	return (
@@ -52,7 +62,7 @@ export function SingleItem(props) {
 			(!event.ignoreHold && Boolean(renderState.holding))
 		}
 		>
-			{ !toggled ? event.display : event.endDisplay }
+			{ !active ? event.display : event.endDisplay }
 		</Button>
 	);
 };
