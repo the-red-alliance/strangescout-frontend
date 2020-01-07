@@ -53,10 +53,10 @@ export function Run(props) {
 	// page state
 	const initialState = {
 		readableEventLog: [],
-		currentEvent: undefined,
 		holding: '',
 		loadoutShown: false,
-		activeDurationEvents: {},
+		lastUndo: null,
+
 	};
 	const [ state, setState ] = useState(initialState);
 	const [ remainingTime, setRemainingTime ] = useState(totalTime);
@@ -76,10 +76,8 @@ export function Run(props) {
 
 		let newState = {
 			...state,
-			currentEvent: undefined,
+			lastUndo: runState.journal[runState.journal.length - 1],
 		};
-
-		//let newChildOpen = false;
 
 		let newRunState = {
 			...runState,
@@ -89,18 +87,7 @@ export function Run(props) {
 		};
 		newRunState.journal.pop();
 		newState.readableEventLog.pop();
-		
-		if (newRunState.journal.length > 0) {
-			let lastEventKey = newRunState.journal[newRunState.journal.length - 1].event;
-			let matchingTopEvents = template.scout.run.filter(event => (event.key === lastEventKey));
 
-			if (matchingTopEvents.length === 1) {
-				newState.currentEvent = matchingTopEvents[0];
-				//newChildOpen = true;
-			}
-		}
-
-		//setChildOpen(newChildOpen);
 		setState(newState);
 		setRunState(newRunState);
 	};
@@ -115,7 +102,6 @@ export function Run(props) {
 			let matchingTopEvents = template.scout.run.filter(event => (event.key === lastEventKey));
 
 			if (matchingTopEvents.length === 1) {
-				newState.currentEvent = matchingTopEvents[0];
 				newState.readableEventLog.push(matchingTopEvents[0].display);
 
 				setState(newState);

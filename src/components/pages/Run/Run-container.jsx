@@ -70,16 +70,23 @@ export function RunContainer(props) {
 		setMatchStatus({ ...matchStatus, completed: true });
 	};
 
+	// submit the match
 	const onSubmit = () => {
+		// async store to the run queue
 		storeLocalRun(runState).then(() => {
+			// on success redirect to /
 			history.push('/');
 
+			// async sync data with the server
 			syncData(user.session.token).then(() => {
+				// notification on success
 				props.dispatch(sendNotification({
 					variant: 'success',
 					text: 'Successfully synced data!'
 				}));
 			}, (e) => {
+				// error handling
+				// log to console and notify the user
 				console.error('failed to sync runs ', e);
 				props.dispatch(sendNotification({
 					variant: 'error',
@@ -87,6 +94,8 @@ export function RunContainer(props) {
 				}));
 			});
 		}, (e) => {
+			// error handling
+			// log to console and notify the user
 			console.error('failed to save run ', e);
 			props.dispatch(sendNotification({
 				variant: 'error',

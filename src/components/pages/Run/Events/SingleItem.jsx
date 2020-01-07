@@ -121,6 +121,14 @@ export function SingleItem(props) {
 	const classes = useStyles({ canHold: canHold, children: children });
 
 	const [ open, setOpen ] = useState(false);
+	const [ localLastUndo, setLocalLastUndo ] = useState(null);
+
+	if (localLastUndo !== renderState.lastUndo) {
+		setLocalLastUndo(renderState.lastUndo);
+		if (children.filter(v => v.key === renderState.lastUndo.event).length > 0) {
+			setOpen(true);
+		}
+	}
 
 	const onTop = () => {
 		let newRunState = { ...runState };
