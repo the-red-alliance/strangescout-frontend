@@ -17,11 +17,17 @@ export function SingleItem(props) {
 	const [ active, setActive ] = useState(false);
 	const [ localLastUndo, setLocalLastUndo ] = useState(null);
 
+	// if there's been a new undo we haven't handled
 	if (localLastUndo !== renderState.lastUndo) {
+		// update our local undo tracking
 		setLocalLastUndo(renderState.lastUndo);
+		// if the undo was for our end event
 		if (renderState.lastUndo.event === event.endKey) {
+			// set the duration active
 			setActive(true);
+		// else if the undo was for our start event
 		} else if (renderState.lastUndo.event === event.key) {
+			// set the duration inactive
 			setActive(false);
 		}
 	}
@@ -31,10 +37,10 @@ export function SingleItem(props) {
 		let newRenderState = { ...renderState };
 
 		let journalEvent = {
-			event: event.key,
+			event: event.startKey,
 			time: totalTime - remainingTime
 		};
-		let readableEvent = event.display;
+		let readableEvent = event.startDisplay;
 
 		if (active) {
 			journalEvent.event = event.endKey;
@@ -62,7 +68,7 @@ export function SingleItem(props) {
 			(!event.ignoreHold && Boolean(renderState.holding))
 		}
 		>
-			{ !active ? event.display : event.endDisplay }
+			{ !active ? event.startDisplay : event.endDisplay }
 		</Button>
 	);
 };

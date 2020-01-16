@@ -122,27 +122,32 @@ export function SingleItem(props) {
 
 	const [ open, setOpen ] = useState(false);
 	const [ localLastUndo, setLocalLastUndo ] = useState(null);
+	const [ occured, setOccured ] = useState(false);
 
 	if (localLastUndo !== renderState.lastUndo) {
 		setLocalLastUndo(renderState.lastUndo);
 		if (children.filter(v => v.key === renderState.lastUndo.event).length > 0) {
 			setOpen(true);
+			setOccured(false);
 		}
 	}
 
 	const onTop = () => {
-		let newRunState = { ...runState };
-		let newRenderState = { ...renderState };
+		if (renderState.holding !== event.key) {
+			let newRunState = { ...runState };
+			let newRenderState = { ...renderState };
 
-		newRunState.journal.push({
-			event: event.key,
-			time: totalTime - remainingTime
-		});
-		newRenderState.readableEventLog.push(event.display);
-		
+			newRunState.journal.push({
+				event: event.key,
+				time: totalTime - remainingTime
+			});
+			newRenderState.readableEventLog.push(event.display);
+
+			setRunState(newRunState);
+			setRenderState(newRenderState);
+		}
+
 		setOpen(true);
-		setRunState(newRunState);
-		setRenderState(newRenderState);
 	};
 	
 	const onChild = (key, display) => {
@@ -154,10 +159,12 @@ export function SingleItem(props) {
 			time: totalTime - remainingTime
 		});
 		newRenderState.readableEventLog.push(display);
+		newRenderState.holding = '';
 		
 		setOpen(false);
 		setRunState(newRunState);
 		setRenderState(newRenderState);
+		if (event.singleUse) setOccured(true);
 	};
 
 	const onUndo = () => {
@@ -182,15 +189,26 @@ export function SingleItem(props) {
 		setOpen(false);
 	};
 
+	const onHold = () => {
+		if (!event.canHold) return;
+
+		let newRenderState = { ...renderState };
+		newRenderState.holding = event.key;
+		setRenderState(newRenderState);
+		setOpen(false);
+	};
+
 	return (
 		<React.Fragment>
-			<ChildDialog open={open} children={children} canHold={canHold} onChild={onChild} onUndo={onUndo} />
+			<ChildDialog open={open} children={children} canHold={canHold} onChild={onChild} onUndo={onUndo} onHold={onHold} />
 			<Button
 			variant="contained"
 			color="primary"
 			className={classes.button}
 			onClick={onTop}
 			disabled={
+				(event.singleUse && occured)
+				||
 				!(totalTime - remainingTime >= event.activeTime)
 				||
 				(remainingTime === 0 && event.endDisable)

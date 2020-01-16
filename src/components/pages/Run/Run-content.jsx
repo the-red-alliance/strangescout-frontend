@@ -6,6 +6,7 @@ import { Card, CardHeader, CardContent, CardActions } from '@material-ui/core';
 import { Button } from '@material-ui/core';
 
 import SingleItem from './Events/SingleItem';
+import MultiItem from './Events/MultiItem';
 import Duration from './Events/Duration';
 
 // create styles
@@ -25,9 +26,10 @@ const useStyles = makeStyles(theme => ({
 		display: "grid",
 		gridTemplateColumns: "1fr",
 		gridTemplateRows: props => {
+			// by default we will always have 1 row for the undo button
 			let rows = "1fr";
-			let i;
-			for (i = 0; i < props.template.scout.run.length; i++) {
+			// append another row for each scout object
+			for (let i = 0; i < props.template.scout.run.length; i++) {
 				rows = rows + " 1fr";
 			};
 			return rows;
@@ -48,9 +50,14 @@ const useStyles = makeStyles(theme => ({
 
 export function Run(props) {
 	const classes = useStyles(props);
-	const { template, totalTime, matchStatus, afterMatch, runState, setRunState } = props;
+	// get the game template, total match time, match status, run state and setter, and post match function
+	const { template, totalTime, matchStatus, runState, setRunState, afterMatch } = props;
 
 	// page state
+	// readable event log for the `last event` display
+	// string for the currently held item
+	// a boolean for whether or not the loadout has been processed
+	// a key for the last item to have been undone
 	const initialState = {
 		readableEventLog: [],
 		holding: '',
@@ -59,6 +66,7 @@ export function Run(props) {
 
 	};
 	const [ state, setState ] = useState(initialState);
+	// set a timer state from the totalTime prop
 	const [ remainingTime, setRemainingTime ] = useState(totalTime);
 
 	// timer hook
@@ -134,7 +142,7 @@ export function Run(props) {
 							>
 								{(() => {
 									switch (event.type) {
-										case 'item': return (
+										case 'single_item': return (
 											<SingleItem
 											event={event}
 											totalTime={totalTime}
@@ -143,6 +151,19 @@ export function Run(props) {
 											setRenderState={setState}
 											runState={runState}
 											setRunState={setRunState}
+											matchStatus={matchStatus}
+											/>
+										);
+										case 'multi_item': return (
+											<MultiItem
+											event={event}
+											totalTime={totalTime}
+											remainingTime={remainingTime}
+											renderState={state}
+											setRenderState={setState}
+											runState={runState}
+											setRunState={setRunState}
+											matchStatus={matchStatus}
 											/>
 										);
 										case 'duration': return (
@@ -154,6 +175,7 @@ export function Run(props) {
 											setRenderState={setState}
 											runState={runState}
 											setRunState={setRunState}
+											matchStatus={matchStatus}
 											/>
 										);
 										default: return (

@@ -105,11 +105,14 @@ export function SetupDialog(props) {
 	const classes = useStyles();
 	const { open, template, startMatchAction, runState, setRunState } = props;
 
+	// setup state
+	// team, match, starting position
+	// loadout is an array converted to JSON because it's set with a html select
 	const initialState = {
 		team: '',
 		match: '',
 		position: '',
-		loadout: 'none',
+		loadout: '[]',
 	};
 	const [state, setState] = useState(initialState);
 
@@ -132,10 +135,8 @@ export function SetupDialog(props) {
 	const startMatch = () => {
 		let newJournal = [ ...runState.journal ];
 
-		let matchingTopEvents = template.scout.run.filter(event => (event.key === state.loadout));
-		if (matchingTopEvents.length === 1) {
-			newJournal.push({event: matchingTopEvents[0].key, time: 0});
-		}
+		let loadoutEvents = JSON.parse(state.loadout);
+		loadoutEvents.forEach(item => newJournal.push({event: item, time: 0}));
 
 		setRunState({
 			...runState,
@@ -143,7 +144,7 @@ export function SetupDialog(props) {
 			match: state.match,
 			position: state.position,
 			journal: newJournal
-		})
+		});
 		startMatchAction();
 	}
 	
@@ -205,10 +206,11 @@ export function SetupDialog(props) {
 							value={state.loadout}
 							onChange={handleChange('loadout')}
 						>
-							<MenuItem value="none">None</MenuItem>
+							<MenuItem value={'[]'}>None</MenuItem>
 							{template.loadouts.map(item => {
+								// the loadout events are stringified so the select works properly
 								return (
-									<MenuItem key={item.event} value={item.event}>{item.display}</MenuItem>
+									<MenuItem key={JSON.stringify(item.events)} value={JSON.stringify(item.events)}>{item.display}</MenuItem>
 								);
 							})}
 						</Select>

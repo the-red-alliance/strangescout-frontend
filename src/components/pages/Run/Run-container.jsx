@@ -9,10 +9,10 @@ import { Run } from './Run-content.jsx';
 import { SetupDialog } from './Run-SetupDialog.jsx';
 import { FinalizeDialog } from './Run-FinalizeDialog.jsx';
 
+// we need the user and game template from the store
 function mapStateToProps(state) {
 	return {
 		user: state.user,
-		notification: state.notification,
 		template: state.template,
 	};
 };
@@ -30,12 +30,15 @@ export function RunContainer(props) {
 	});
 
 	// dialogs open states
+	// setup dialog starts open
+	// endgame dialog starts closed
 	const [ dialogs, setDialogs ] = useState({
 		setupDialog: true,
 		finalizeDialog: false,
 	});
 
 	// current state of the run
+	// team number, match number, starting position, run journal, endgame fields, notes
 	const [ runState, setRunState ] = useState({
 		team: '',
 		match: '',
@@ -106,11 +109,16 @@ export function RunContainer(props) {
 
 	return (
 		<React.Fragment>
+			{/*
+				The actual content requires the template, a total match time,
+				our matchStatus state and it's setter,
+				our run state and it's setter,
+				and the post match function
+			*/}
 			<Run
 			template={template}
 			totalTime={150}
 			matchStatus={matchStatus}
-			setMatchStatus={setMatchStatus}
 			runState={runState}
 			setRunState={setRunState}
 			afterMatch={endMatch}
