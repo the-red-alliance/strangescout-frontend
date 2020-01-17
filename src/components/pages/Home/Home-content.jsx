@@ -27,9 +27,8 @@ const useStyles = makeStyles(theme => ({
 		display: "grid",
 		gridTemplateColumns: "1fr",
 		gridTemplateRows: props => {
-			const { admin, invite } = props;
+			const { invite } = props;
 			let rows = '1fr 1fr 1fr';
-			if (admin) rows = rows + ' 1fr';
 			if (invite) rows = rows + ' 1fr';
 			return rows;
 		},
@@ -68,9 +67,8 @@ const useStyles = makeStyles(theme => ({
 
 	syncButton: {
 		gridRow: props => {
-			const { admin, invite } = props;
+			const { invite } = props;
 			let index = 3;
-			if (admin) index = index + 1;
 			if (invite) index = index + 1;
 			return `${index} / ${index + 1}`;
 		},
@@ -89,7 +87,7 @@ const useStyles = makeStyles(theme => ({
 export function Home(props) {
 	// import classes/styles
 	const classes = useStyles(props);
-	const { invite, admin } = props;
+	const { invite } = props;
 
 	// history api for routing
 	const history = useHistory();
@@ -118,13 +116,6 @@ export function Home(props) {
 							<div className={classes.row3}>
 								<Button className={classes.button} variant="contained" onClick={() => redirect('/invite')}>
 									Invite a User
-								</Button>
-							</div>
-						}
-						{ admin &&
-							<div className={invite ? classes.row4 : classes.row3}>
-								<Button className={classes.button} variant="contained" color="secondary" onClick={() => redirect('/admin')}>
-									Admin Panel
 								</Button>
 							</div>
 						}
