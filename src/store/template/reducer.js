@@ -1,6 +1,5 @@
 // initial state
 const dummyTemplate = {
-    active: true,
     gameInfo: {
       program: 'FRC',
       name: 'FIRST Infinite Recharge',
@@ -60,7 +59,6 @@ const dummyTemplate = {
               key: 'drop_cell'
             }
           ],
-          ignoreHold: false,
           endDisable: true
         },
         {
