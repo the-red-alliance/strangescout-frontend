@@ -11,6 +11,15 @@ const versions = [
 			processedTeams: '&_id, team, matches, updated',
 		},
 	},
+	{
+		version: 2,
+		stores: {
+			runs: '&_id, team, match, updated',
+			runQueue: '++localId, team, match',
+			processedTeams: '&_id, team, matches, updated',
+			events: '&_id, key, startDate'
+		},
+	},
 ];
 
 export function clearData() {
@@ -305,6 +314,43 @@ export function fetchRemovedProcessedTeams(token) {
 	});
 };
 
+export function fetchEvents(token) {
+	return new Promise((resolve, reject) => {
+		const db = new Dexie('strangescout');
+		versions.forEach(version => {
+			db.version(version.version).stores(version.stores);
+		});
+
+		const url = window.origin + '/api/events';
+		get(
+			url,
+			token,
+			[{name: 'Content-type', value: 'application/json'}]
+		).then((result) => {
+			if (result.status === 200) {
+				let docs;
+				try {
+					docs = JSON.parse(result.response, dateParser);
+
+					try {
+						db.events.bulkPut(docs);
+						resolve();
+					} catch (e) {
+						console.error('failed to save docs', e);
+						reject('failed to save');
+					}
+				} catch (e) {
+					console.error('failed to parse docs', e);
+					reject('failed to parse');
+				}
+			} else {
+				console.error('failed to get events from server', result);
+				reject('failed to fetch');
+			}
+		});
+	});
+};
+
 export function syncData(token) {
 	return new Promise((resolve, reject) => {
 		pushLocalRuns(token).then(() => {
@@ -312,7 +358,11 @@ export function syncData(token) {
 				fetchRemovedRuns(token).then(() => {
 					fetchNewProcessedTeams(token).then(() => {
 						fetchRemovedProcessedTeams(token).then(() => {
+							fetchEvents(token).then(() => {
 							resolve();
+							}, fetchEventsError => {
+								reject(fetchEventsError);
+							});
 						}, fetchRemovedProcessedError => {
 							reject(fetchRemovedProcessedError);
 						});
