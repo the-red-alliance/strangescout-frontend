@@ -34,6 +34,68 @@ const dummyTemplate = {
       }
     ],
     scout: {
+      pit: [
+        {
+          type: 'number',
+          name: 'ground clearance',
+          key: 'ground_clearance',
+          required: true,
+        },
+
+        {
+          type: 'boolean',
+          name: 'control panel clearance',
+          key: 'control_panel',
+          required: true,
+        },
+        {
+          type: 'select',
+          name: 'drivetrain',
+          key: 'drive_train',
+          required: true,
+          options: [
+              {
+                name: 'Kit Bot',
+                key: 'kit_bot',
+              }, 
+              {
+                name: 'Swerve',
+                key: 'swerve',
+              },
+              {
+                name: 'West Coast',
+                key: 'west_coast',
+              },
+              {
+                name: 'Mecanum',
+                key: 'mecanum',
+              },
+              {
+                name: 'All Omni',
+                key: 'all_omni',
+              },
+              {
+                name: 'Pnuematic',
+                key: 'Pnuematic',
+              },
+              {
+                name: 'Eight Wheel',
+                key: 'eight_wheel',
+              },
+              {
+                name: 'Treads',
+                key: 'treads',
+              },
+              {
+                name: 'Other (in notes)',
+                key: 'notes',
+              },
+
+          ]
+          
+        
+        },
+      ],
       run: [
         {
           type: 'multi_item',
