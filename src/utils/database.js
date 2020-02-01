@@ -29,6 +29,22 @@ export function clearData() {
 	db.delete();
 };
 
+export function readEvents() {
+	return new Promise((resolve, reject) => {
+		const db = new Dexie('strangescout');
+		versions.forEach(version => {
+			db.version(version.version).stores(version.stores);
+		});
+
+		db.events.toArray().then(docs => {
+			resolve(docs);
+		}, e => {
+			console.error('error reading events from local db: ', e);
+			reject(e);
+		});
+	});
+};
+
 export function mostRecentRun() {
 	return new Promise((resolve, reject) => {
 		const db = new Dexie('strangescout');

@@ -14,11 +14,12 @@ function mapStateToProps(state) {
 	return {
 		user: state.user,
 		template: state.template,
+		events: state.events,
 	};
 };
 
 export function RunContainer(props) {
-	const { template, user } = props;
+	const { template, user, events } = props;
 	// state for mtch status
 	// has the match started yet
 	// is the match completed
@@ -40,6 +41,7 @@ export function RunContainer(props) {
 	// current state of the run
 	// team number, match number, starting position, run journal, endgame fields, notes
 	const [ runState, setRunState ] = useState({
+		event: '',
 		team: '',
 		match: '',
 		position: '',
@@ -124,6 +126,7 @@ export function RunContainer(props) {
 			afterMatch={endMatch}
 			/>
 			<SetupDialog
+			events={events}
 			open={dialogs.setupDialog}
 			template={template}
 			startMatchAction={startMatch}

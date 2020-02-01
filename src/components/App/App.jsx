@@ -1,18 +1,14 @@
 import React, { useState } from 'react';
-
+import { makeStyles } from '@material-ui/core/styles';
 // routing imports
 import { HashRouter as Router } from "react-router-dom";
 import PageRouter from '../PageRouter';
-
 // store imports
 import { Provider } from 'react-redux';
 import store from '../../store/store.js';
-
-import { makeStyles } from '@material-ui/core/styles';
-
 // import the shell
 import Shell from '../Shell';
-
+// import the loader
 import Loader from './Loader';
 
 const useStyles = makeStyles(theme => ({

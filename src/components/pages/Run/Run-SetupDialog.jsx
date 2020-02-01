@@ -103,7 +103,7 @@ const useStyles = makeStyles(theme => ({
 
 export function SetupDialog(props) {
 	const classes = useStyles();
-	const { open, template, startMatchAction, runState, setRunState } = props;
+	const { events, open, template, startMatchAction, runState, setRunState } = props;
 
 	// setup state
 	// team, match, starting position
