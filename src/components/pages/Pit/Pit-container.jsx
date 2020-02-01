@@ -12,12 +12,13 @@ import { Pit } from './Pit-content.jsx';
 function mapStateToProps(state) {
 	return {
 		user: state.user,
-		template: state.template
+		template: state.template,
+		events: state.events,
 	};
 };
 
 function PitContainer(props) {
-	const { user, template } = props;
+	const { user, template, events } = props;
 
 	// history api for routing
 	const history = useHistory();
@@ -26,9 +27,9 @@ function PitContainer(props) {
 	if (process.env.NODE_ENV === 'production' && !props.user.loggedin) return <Redirect to={"/login"} />;
 
 	// when submitting a team
-	const onSubmit = (team, data) => {
+	const onSubmit = (team, event, data) => {
 		// store the team doc to local db
-		storeLocalTeam({team: team, data: data}).then(() => {
+		storeLocalTeam({team: team, event: event, data: data}).then(() => {
 			// on successful store
 			// redirect to /
 			history.push('/');
@@ -60,7 +61,7 @@ function PitContainer(props) {
 	};
 
 	return (
-		<Pit submit={onSubmit} template={template} />
+		<Pit submit={onSubmit} template={template} events={events} />
 	);
 };
 

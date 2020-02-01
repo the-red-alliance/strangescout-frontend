@@ -74,7 +74,7 @@ const useStyles = makeStyles(theme => ({
 		gridTemplateColumns: "1fr",
 		gridTemplateRows: props => {
 			// by default we will always have 1 row for the team input
-			let rows = "1fr";
+			let rows = props.events.length > 0 ? "1fr 1fr" : "1fr";
 			// append another row for each pit scout object
 			for (let i = 0; i < props.template.scout.pit.length; i++) {
 				rows = rows + " 1fr";
@@ -92,7 +92,7 @@ const useStyles = makeStyles(theme => ({
 
 export function Pit(props) {
 	// load the submit function and template from props
-	const { submit, template } = props;
+	const { submit, template, events } = props;
 
 	// create the initial state
 	let initialState = {};
@@ -110,6 +110,10 @@ export function Pit(props) {
 	const classes = useStyles(props);
 	// set a separate state for team number
 	const [ team, setTeam ] = useState(undefined);
+	const currentEvent = () => {
+		return events.filter(event => ( event.startDate < Date.now() && event.endDate > Date.now() ))[0];
+	};
+	const [ event, setEvent ] = useState(currentEvent() ? currentEvent().key : '');
 	// set our data state
 	const [ state, setState ] = useState(initialState);
 	// set a blank state to keep track of touched fields
@@ -149,6 +153,13 @@ export function Pit(props) {
 		// update team state
 		setTeam(newvalue);
 	};
+	// handle changes to the event field
+	const handleEvent = prop => event => {
+		// set the touched object
+		setTouched({ ...touched, event: true });
+		// update event state
+		setEvent(event.target.value);
+	};
 
 	return (
 		<div className={classes.root}>
@@ -156,11 +167,33 @@ export function Pit(props) {
 				<CardHeader title={'Scout a Pit'}/>
 				<CardContent>
 					<div className={classes.container}>
+						{ events.length > 0 &&
+							<FormControl
+							style={{
+								display: 'flex',
+								gridColumn: "1 / 2",
+								gridRow: "1 / 2",
+							}}>
+								<InputLabel id="event-label">Event</InputLabel>
+								<Select
+									labelId="event-label"
+									id="event"
+									value={event}
+									onChange={handleEvent('event')}
+								>
+									{events.map(item => {
+										return (
+											<MenuItem key={item.key} value={item.key}>{item.name}</MenuItem>
+										);
+									})}
+								</Select>
+							</FormControl>
+						}
 						<FormControl
 						style={{
 							display: 'flex',
 							gridColumn: '1 / 2',
-							gridRow: "1 / 2",
+							gridRow: events.length > 0 ? "2 / 3" : "1 / 2",
 						}}
 						>
 							<InputLabel>Team</InputLabel>
@@ -183,7 +216,7 @@ export function Pit(props) {
 								display: 'flex',
 								gridColumn: '1 / 2',
 								// determine the row based on the item index
-								gridRow: (i + 2) + " / " + (i + 3),
+								gridRow: (i + (events.length > 0 ? 3 : 2)) + " / " + (i + (events.length > 0 ? 4 : 3)),
 							}}
 							>
 								{/* switch via the item type key */}
@@ -254,7 +287,7 @@ export function Pit(props) {
 					variant={"contained"}
 					color={"primary"}
 					disabled={!validation.isValid || !teamValidation.isValid /* disable submit if both validators aren't valid */}
-					onClick={() => submit(team, state)}
+					onClick={() => submit(team, event, state)}
 					>
 						Submit
 					</Button>
