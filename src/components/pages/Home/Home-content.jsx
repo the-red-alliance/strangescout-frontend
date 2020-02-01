@@ -28,7 +28,7 @@ const useStyles = makeStyles(theme => ({
 		gridTemplateColumns: "1fr",
 		gridTemplateRows: props => {
 			const { invite } = props;
-			let rows = '1fr 1fr 1fr';
+			let rows = '1fr 1fr 1fr 1fr';
 			if (invite) rows = rows + ' 1fr';
 			return rows;
 		},
@@ -64,11 +64,17 @@ const useStyles = makeStyles(theme => ({
 		display: 'flex',
 		justifyContent: 'center',
 	},
+	row6: {
+		gridRow: "6 / 7",
+		gridColumn: "1 / 2",
+		display: 'flex',
+		justifyContent: 'center',
+	},
 
 	syncButton: {
 		gridRow: props => {
 			const { invite } = props;
-			let index = 3;
+			let index = 4;
 			if (invite) index = index + 1;
 			return `${index} / ${index + 1}`;
 		},
@@ -108,12 +114,17 @@ export function Home(props) {
 							</Button>
 						</div>
 						<div className={classes.row2}>
+							<Button className={classes.button} variant="contained" color="primary" onClick={() => redirect('/pit')}>
+								Pit Scout
+							</Button>
+						</div>
+						<div className={classes.row3}>
 							<Button className={classes.button} variant="contained" color="primary" onClick={() => redirect('/data')}>
 								Data Dashboard
 							</Button>
 						</div>
 						{ invite &&
-							<div className={classes.row3}>
+							<div className={classes.row4}>
 								<Button className={classes.button} variant="contained" onClick={() => redirect('/invite')}>
 									Invite a User
 								</Button>

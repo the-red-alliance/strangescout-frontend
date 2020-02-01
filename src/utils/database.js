@@ -1,5 +1,5 @@
 import Dexie from 'dexie';
-import { post, get } from './requests';
+import { post, get, put } from './requests';
 import dateParser from './dateParser';
 
 const versions = [
@@ -17,6 +17,8 @@ const versions = [
 			runs: '&_id, team, match, updated',
 			runQueue: '++localId, team, match',
 			processedTeams: '&_id, team, matches, updated',
+			teams: '&_id, team, updated',
+			teamQueue: '++localId, team',
 			events: '&_id, key, startDate'
 		},
 	},
@@ -314,6 +316,129 @@ export function fetchRemovedProcessedTeams(token) {
 	});
 };
 
+export function mostRecentTeam() {
+	return new Promise((resolve, reject) => {
+		const db = new Dexie('strangescout');
+		versions.forEach(version => {
+			db.version(version.version).stores(version.stores);
+		});
+
+		db.teams.orderBy('updated').last().then(object => {
+			if (object) {
+				console.log('last updated: ', object.updated);
+				resolve(object.updated);
+			} else {
+				console.log('could not find last updated');
+				resolve();
+			}
+		}, (e) => {
+			console.error('error finding last modified', e);
+			reject();
+		});
+	});
+};
+
+export function fetchNewTeams(token) {
+	return new Promise((resolve, reject) => {
+		const db = new Dexie('strangescout');
+		versions.forEach(version => {
+			db.version(version.version).stores(version.stores);
+		});
+
+		mostRecentTeam().then((lastUpdated) => {
+			const url = lastUpdated ? window.origin + '/api/teams?updated=' + JSON.stringify(lastUpdated) : '/api/teams';
+			get(
+				url,
+				token,
+				[{name: 'Content-type', value: 'application/json'}]
+			).then((result) => {
+				if (result.status === 200) {
+					let docs;
+					try {
+						docs = JSON.parse(result.response, dateParser);
+
+						try {
+							db.teams.bulkPut(docs);
+							resolve();
+						} catch (e) {
+							console.error('failed to save docs', e);
+							reject('failed to save');
+						}
+					} catch (e) {
+						console.error('failed to parse docs', e);
+						reject('failed to parse');
+					}
+				} else {
+					console.error('failed to get teams from server', result);
+					reject('failed to fetch');
+				}
+			});
+		}, () => {
+			console.error('error finding last modified');
+			reject('couldn\'t find last modified');
+		});
+	});
+};
+
+export function storeLocalTeam(team) {
+	return new Promise((resolve, reject) => {
+		const db = new Dexie('strangescout');
+		versions.forEach(version => {
+			db.version(version.version).stores(version.stores);
+		});
+
+		db.teamQueue.put(team).then(() => {
+			resolve();
+		}, (e) => {
+			console.error('failed to store local team', e);
+			reject('failed to store team');
+		});
+	});
+};
+
+export function pushLocalTeams(token) {
+	return new Promise((resolve, reject) => {
+		const db = new Dexie('strangescout');
+		versions.forEach(version => {
+			db.version(version.version).stores(version.stores);
+		});
+
+		db.teamQueue.toArray().then(teams => {
+			if (teams.length === 0) resolve();
+			let count = 0;
+			teams.forEach(team => {
+				put(
+					window.origin + '/api/teams/' + team.team,
+					JSON.stringify(team),
+					token,
+					[{name: 'Content-type', value: 'application/json'}]
+				).then(result => {
+					if (result.status === 200) {
+						db.teamQueue.delete(team.localId).then(() => {
+							count = count + 1;
+							if (count === teams.length) {
+								resolve();
+							};
+						}, e => {
+							console.error('failed to delete local team', e);
+							reject('failed to delete local team');
+						});
+					} else {
+						console.error('failed to POST local team', result);
+						reject('failed to push teams');
+					}
+				}, e => {
+					console.error('failed to POST local team', e);
+					reject('failed to push teams');
+				});
+			});
+		}, (e) => {
+			console.error('failed to read local teams', e);
+			reject('failed to read teams');
+		});
+	});
+};
+
 export function fetchEvents(token) {
 	return new Promise((resolve, reject) => {
 		const db = new Dexie('strangescout');
@@ -356,19 +481,33 @@ export function syncData(token) {
 		pushLocalRuns(token).then(() => {
 			fetchNewRuns(token).then(() => {
 				fetchRemovedRuns(token).then(() => {
+
 					fetchNewProcessedTeams(token).then(() => {
 						fetchRemovedProcessedTeams(token).then(() => {
-							fetchEvents(token).then(() => {
-							resolve();
-							}, fetchEventsError => {
-								reject(fetchEventsError);
+
+							pushLocalTeams(token).then(() => {
+								fetchNewTeams(token).then(() => {
+
+									fetchEvents(token).then(() => {
+										resolve();
+									}, fetchEventsError => {
+										reject(fetchEventsError);
+									});
+
+								}, fetchTeamsError => {
+									reject(fetchTeamsError);
+								});
+							}, pushTeamsError => {
+								reject(pushTeamsError);
 							});
+
 						}, fetchRemovedProcessedError => {
 							reject(fetchRemovedProcessedError);
 						});
 					}, fetchProcessedError => {
 						reject(fetchProcessedError);
 					});
+
 				}, fetchRemovedError => {
 					reject(fetchRemovedError);
 				});
