@@ -37,21 +37,20 @@ const dummyTemplate = {
       pit: [
         {
           type: 'number',
-          name: 'ground clearance',
+          name: 'Ground Clearance (inches)',
           key: 'ground_clearance',
           required: true,
         },
 
         {
           type: 'boolean',
-          name: 'control panel clearance',
+          name: 'Can you fit under the control panel?',
           key: 'control_panel',
-          required: true,
         },
         {
           type: 'select',
-          name: 'drivetrain',
-          key: 'drive_train',
+          name: 'Drivetrain',
+          key: 'drivetrain',
           required: true,
           options: [
               {
