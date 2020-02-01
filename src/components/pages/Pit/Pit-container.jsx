@@ -24,8 +24,11 @@ function PitContainer(props) {
 	// redirect to the login page if the user isn't logged in
 	if (process.env.NODE_ENV === 'production' && !props.user.loggedin) return <Redirect to={"/login"} />;
 
+	// when submitting a team
 	const onSubmit = (team, data) => {
+		// store the team doc to local db
 		storeLocalTeam({team: team, data: data});
+		// redirect to /
 		history.push('/');
 	};
 
