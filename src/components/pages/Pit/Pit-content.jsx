@@ -52,6 +52,7 @@ const teamValidator = new formValidator([
 	{
 		field: 'team',
 		method: 'isInt',
+		args: [{min: 0}],
 		validWhen: true,
 		message: 'Team must be a number'
 	}

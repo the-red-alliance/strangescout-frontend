@@ -417,7 +417,7 @@ export function pushLocalTeams(token) {
 					if (result.status === 200) {
 						db.teamQueue.delete(team.localId).then(() => {
 							count = count + 1;
-							if (count === team.length) {
+							if (count === teams.length) {
 								resolve();
 							};
 						}, e => {
