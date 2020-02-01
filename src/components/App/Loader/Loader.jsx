@@ -42,7 +42,7 @@ export function Loader(props) {
 			} else {
 				// load events
 				readEvents().then(events => {
-					props.dispatch(setEvents(events));
+					console.log('read events: ', events);
 				}, e => {
 					console.error('error loading events from local db: ', e);
 				});

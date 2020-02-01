@@ -62,32 +62,8 @@ const useStyles = makeStyles(theme => ({
 		width: "100%",
 		display: "grid",
 		gridTemplateColumns: "1fr",
-		gridTemplateRows: "1fr 1fr 1fr 1fr",
+		gridTemplateRows: props => props.events.length > 0 ? "1fr 1fr 1fr 1fr 1fr" : "1fr 1fr 1fr 1fr",
 		gridGap: "20px",
-	},
-	row1: {
-		display: 'flex',
-	//	justifyContent: 'center',
-		gridColumn: "1 / 2",
-		gridRow: "1 / 2",
-	},
-	row2: {
-		display: 'flex',
-	//	justifyContent: 'center',
-		gridColumn: "1 / 2",
-		gridRow: "2 / 3",
-	},
-	row3: {
-		display: 'flex',
-	//	justifyContent: 'center',
-		gridColumn: "1 / 2",
-		gridRow: "3 / 4",
-	},
-	row4: {
-		display: 'flex',
-	//	justifyContent: 'center',
-		gridColumn: "1 / 2",
-		gridRow: "4 / 5",
 	},
 
 	button: {
@@ -102,13 +78,18 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export function SetupDialog(props) {
-	const classes = useStyles();
+	const classes = useStyles(props);
 	const { events, open, template, startMatchAction, runState, setRunState } = props;
+
+	const currentEvent = () => {
+		return events.filter(event => ( event.startDate < Date.now() && event.endDate > Date.now() ))[0];
+	};
 
 	// setup state
 	// team, match, starting position
 	// loadout is an array converted to JSON because it's set with a html select
 	const initialState = {
+		event: currentEvent() ? currentEvent().key : '',
 		team: '',
 		match: '',
 		position: '',
@@ -140,6 +121,7 @@ export function SetupDialog(props) {
 
 		setRunState({
 			...runState,
+			event: events.length > 0 ? state.event : '',
 			team: state.team,
 			match: state.match,
 			position: state.position,
@@ -153,7 +135,13 @@ export function SetupDialog(props) {
 			<DialogTitle>Setup Match</DialogTitle>
 			<DialogContent className={classes.dialogContent}>
 				<div className={classes.container}>
-					<FormControl className={classes.row1}>
+					<FormControl 
+					error={touched.team && validation.team.isInvalid}
+					style={{
+						display: 'flex',
+						gridColumn: "1 / 2",
+						gridRow: "1 / 2",
+					}}>
 						<InputLabel>Team</InputLabel>
 						<Input
 						id="team"
@@ -167,7 +155,12 @@ export function SetupDialog(props) {
 							<FormHelperText>{validation.team.message}</FormHelperText>
 						}
 					</FormControl>
-					<FormControl className={classes.row2} error={touched.match && validation.match.isInvalid}>
+					<FormControl error={touched.match && validation.match.isInvalid}
+					style={{
+						display: 'flex',
+						gridColumn: "1 / 2",
+						gridRow: "2 / 3",
+					}}>
 						<InputLabel>Match</InputLabel>
 						<Input
 						id="match"
@@ -180,7 +173,12 @@ export function SetupDialog(props) {
 							<FormHelperText>{validation.match.message}</FormHelperText>
 						}
 					</FormControl>
-					<FormControl className={classes.row3} error={touched.position && validation.position.isInvalid}>
+					<FormControl error={touched.position && validation.position.isInvalid}
+					style={{
+						display: 'flex',
+						gridColumn: "1 / 2",
+						gridRow: "3 / 4",
+					}}>
 						<InputLabel id="robot-start-position-label">Starting Position</InputLabel>
 						<Select
 							labelId="robot-start-position-label"
@@ -198,7 +196,12 @@ export function SetupDialog(props) {
 							<FormHelperText>{validation.position.message}</FormHelperText>
 						}
 					</FormControl>
-					<FormControl className={classes.row4}>
+					<FormControl
+					style={{
+						display: 'flex',
+						gridColumn: "1 / 2",
+						gridRow: "4 / 5",
+					}}>
 						<InputLabel id="robot-loadout-label">Loadout</InputLabel>
 						<Select
 							labelId="robot-loadout-label"
@@ -215,6 +218,28 @@ export function SetupDialog(props) {
 							})}
 						</Select>
 					</FormControl>
+					{ events.length > 0 &&
+						<FormControl
+						style={{
+							display: 'flex',
+							gridColumn: "1 / 2",
+							gridRow: "5 / 6",
+						}}>
+							<InputLabel id="event-label">Event</InputLabel>
+							<Select
+								labelId="event-label"
+								id="event"
+								value={state.event}
+								onChange={handleChange('event')}
+							>
+								{events.map(item => {
+									return (
+										<MenuItem key={item.key} value={item.key}>{item.name}</MenuItem>
+									);
+								})}
+							</Select>
+						</FormControl>
+					}
 				</div>
 			</DialogContent>
 			<DialogActions>
