@@ -316,7 +316,6 @@ export function fetchRemovedProcessedTeams(token) {
 	});
 };
 
-
 export function mostRecentTeam() {
 	return new Promise((resolve, reject) => {
 		const db = new Dexie('strangescout');
