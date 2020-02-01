@@ -1,5 +1,5 @@
 import Dexie from 'dexie';
-import { post, get } from './requests';
+import { post, get, put } from './requests';
 import dateParser from './dateParser';
 
 const versions = [
@@ -408,13 +408,13 @@ export function pushLocalTeams(token) {
 			if (teams.length === 0) resolve();
 			let count = 0;
 			teams.forEach(team => {
-				post(
+				put(
 					window.origin + '/api/teams/' + team.team,
 					JSON.stringify(team),
 					token,
 					[{name: 'Content-type', value: 'application/json'}]
 				).then(result => {
-					if (result.status === 202) {
+					if (result.status === 200) {
 						db.teamQueue.delete(team.localId).then(() => {
 							count = count + 1;
 							if (count === team.length) {
@@ -482,19 +482,33 @@ export function syncData(token) {
 		pushLocalRuns(token).then(() => {
 			fetchNewRuns(token).then(() => {
 				fetchRemovedRuns(token).then(() => {
+
 					fetchNewProcessedTeams(token).then(() => {
 						fetchRemovedProcessedTeams(token).then(() => {
-							fetchEvents(token).then(() => {
-							resolve();
-							}, fetchEventsError => {
-								reject(fetchEventsError);
+
+							pushLocalTeams(token).then(() => {
+								fetchNewTeams(token).then(() => {
+
+									fetchEvents(token).then(() => {
+										resolve();
+									}, fetchEventsError => {
+										reject(fetchEventsError);
+									});
+
+								}, fetchTeamsError => {
+									reject(fetchTeamsError);
+								});
+							}, pushTeamsError => {
+								reject(pushTeamsError);
 							});
+
 						}, fetchRemovedProcessedError => {
 							reject(fetchRemovedProcessedError);
 						});
 					}, fetchProcessedError => {
 						reject(fetchProcessedError);
 					});
+
 				}, fetchRemovedError => {
 					reject(fetchRemovedError);
 				});

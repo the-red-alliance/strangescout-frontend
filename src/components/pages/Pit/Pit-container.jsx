@@ -2,7 +2,8 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Redirect, useHistory } from 'react-router-dom';
 
-import { storeLocalTeam } from '../../../utils/database';
+import { sendNotification } from '../../../store/notifications/actions';
+import { storeLocalTeam, syncData } from '../../../utils/database';
 
 // import content
 import { Pit } from './Pit-content.jsx';
@@ -16,7 +17,7 @@ function mapStateToProps(state) {
 };
 
 function PitContainer(props) {
-	const { template } = props;
+	const { user, template } = props;
 
 	// history api for routing
 	const history = useHistory();
@@ -27,9 +28,35 @@ function PitContainer(props) {
 	// when submitting a team
 	const onSubmit = (team, data) => {
 		// store the team doc to local db
-		storeLocalTeam({team: team, data: data});
-		// redirect to /
-		history.push('/');
+		storeLocalTeam({team: team, data: data}).then(() => {
+			// on successful store
+			// redirect to /
+			history.push('/');
+			// async sync data with the server
+			syncData(user.session.token).then(() => {
+				// notification on success
+				props.dispatch(sendNotification({
+					variant: 'success',
+					text: 'Successfully synced data!'
+				}));
+			}, (e) => {
+				// error handling
+				// log to console and notify the user
+				console.error('failed to sync pits ', e);
+				props.dispatch(sendNotification({
+					variant: 'error',
+					text: 'Failed to sync data!'
+				}));
+			});
+		}, (e) => {
+			// error handling
+			// log to console and notify the user
+			console.error('failed to save pit ', e);
+			props.dispatch(sendNotification({
+				variant: 'error',
+				text: 'Failed to store data!'
+			}));
+		});
 	};
 
 	return (
