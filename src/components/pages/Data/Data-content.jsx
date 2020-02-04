@@ -30,7 +30,7 @@ export function DataContent(props) {
 
 	const teams = [...new Set(processedTeams.filter(pro => pro.event === selection.event).map(fil => fil.team))];
 	const selectedObj = processedTeams.filter(obj => (obj.team === selection.team && obj.event === selection.event))[0];
-	console.log(selectedObj)
+
 	return (
 		<div className={classes.root}>
 			<Selector events={events} selection={selection} setSelection={setSelection} processedTeams={processedTeams} availableTeams={teams} />
