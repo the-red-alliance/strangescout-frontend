@@ -25,7 +25,7 @@ export function DataContent(props) {
 	let startedEvents = events.filter(event => event.startDate < Date.now()).sort((a, b) => a.startDate - b.startDate);
 	let availableTeams = processedTeams.filter(processed => processed.event === startedEvents[startedEvents.length - 1].key).sort((a, b) => a.team - b.team).map(pro => pro.team);
 
-	let initialSelection = {event: startedEvents[startedEvents.length - 1].key, team: availableTeams[0]};
+	let initialSelection = {event: startedEvents.length > 0 ? startedEvents[startedEvents.length - 1].key : events.sort((a, b) => a.startDate - b.startDate)[0].key, team: availableTeams[0]};
 	const [ selection, setSelection ] = useState(initialSelection);
 
 	const teams = [...new Set(processedTeams.filter(pro => pro.event === selection.event).map(fil => fil.team))];
