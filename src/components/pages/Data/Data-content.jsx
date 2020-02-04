@@ -23,9 +23,15 @@ export function DataContent(props) {
 	const { template, events, processedTeams } = props;
 
 	let startedEvents = events.filter(event => event.startDate < Date.now()).sort((a, b) => a.startDate - b.startDate);
-	let availableTeams = processedTeams.filter(processed => processed.event === startedEvents[startedEvents.length - 1].key).sort((a, b) => a.team - b.team).map(pro => pro.team);
+	
+	let initialSelection = {event: '', team: null};
 
-	let initialSelection = {event: startedEvents.length > 0 ? startedEvents[startedEvents.length - 1].key : events.sort((a, b) => a.startDate - b.startDate)[0].key, team: availableTeams[0]};
+	if (events.length > 1) {
+		let availableTeams = processedTeams.filter(processed => processed.event === (startedEvents.length > 0 ? startedEvents[startedEvents.length - 1].key : events.sort((a, b) => a.startDate - b.startDate)[0].key)).sort((a, b) => a.team - b.team).map(pro => pro.team);
+		initialSelection.event = startedEvents.length > 0 ? startedEvents[startedEvents.length - 1].key : events.sort((a, b) => a.startDate - b.startDate)[0].key;
+		initialSelection.team = availableTeams.length > 0 ? availableTeams[0] : null;
+	}
+	
 	const [ selection, setSelection ] = useState(initialSelection);
 
 	const teams = [...new Set(processedTeams.filter(pro => pro.event === selection.event).map(fil => fil.team))];
