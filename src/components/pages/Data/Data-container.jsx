@@ -25,6 +25,7 @@ const useStyles = makeStyles(theme => ({
 // map store to prop
 function mapStateToProps(state) {
 	return {
+		user: state.user,
 		template: state.template,
 		events: state.events,
 	};
