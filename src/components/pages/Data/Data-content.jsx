@@ -21,7 +21,6 @@ const useStyles = makeStyles(theme => ({
 export function DataContent(props) {
 	const classes = useStyles();
 	const { template, events, processedTeams } = props;
-	console.log(props)
 
 	let startedEvents = events.filter(event => event.startDate < Date.now()).sort((a, b) => a.startDate - b.startDate);
 	

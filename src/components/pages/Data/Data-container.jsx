@@ -68,7 +68,7 @@ function DataContainer(props) {
 
 	return (
 		<div className={classes.root}>
-			<DataContent template={template} events={events} processedTeams={processed} rawRuns={runs} />
+			{dbRead && <DataContent template={template} events={events} processedTeams={processed} rawRuns={runs} />}
 		</div>
 	);
 };
