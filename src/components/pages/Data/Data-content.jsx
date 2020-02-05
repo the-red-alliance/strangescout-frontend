@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 import { makeStyles } from '@material-ui/core/styles';
-import { Card, CardContent, CardHeader, Typography } from '@material-ui/core';
+import { Typography } from '@material-ui/core';
 
 import { Selector } from './Selector.jsx';
 import { DataCard } from './DataCard.jsx';
@@ -21,14 +21,26 @@ const useStyles = makeStyles(theme => ({
 export function DataContent(props) {
 	const classes = useStyles();
 	const { template, events, processedTeams } = props;
+	console.log(props)
 
 	let startedEvents = events.filter(event => event.startDate < Date.now()).sort((a, b) => a.startDate - b.startDate);
 	
 	let initialSelection = {event: '', team: null};
 
 	if (events.length > 1) {
-		let availableTeams = processedTeams.filter(processed => processed.event === (startedEvents.length > 0 ? startedEvents[startedEvents.length - 1].key : events.sort((a, b) => a.startDate - b.startDate)[0].key)).sort((a, b) => a.team - b.team).map(pro => pro.team);
+		// set the initially selected event
+		//     if any events have started, only include teams from the most recently started event
+		//     else sort events from earliest to latest, and pick the earliest
 		initialSelection.event = startedEvents.length > 0 ? startedEvents[startedEvents.length - 1].key : events.sort((a, b) => a.startDate - b.startDate)[0].key;
+		// determine available teams
+		//     filter all teams down to those at the currently selected event
+		//     sort teams in ascending order by number
+		//     map out to only the team numbers
+		let availableTeams = processedTeams
+		.filter(processed => processed.event === initialSelection.event)
+		.sort((a, b) => a.team - b.team)
+		.map(pro => pro.team);
+
 		initialSelection.team = availableTeams.length > 0 ? availableTeams[0] : null;
 	}
 	

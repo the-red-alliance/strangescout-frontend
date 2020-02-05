@@ -27,7 +27,7 @@ function LoginContainer(props) {
 			props.dispatch(loadTemplate(newSession.token));
 			syncData(newSession.token).then(() => {
 				readEvents().then(events => {
-					console.log('read events: ', events);
+					props.dispatch(setEvents(events));
 				}, e => {
 					console.error('error loading events from local db: ', e);
 				});

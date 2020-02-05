@@ -45,6 +45,31 @@ export function readEvents() {
 	});
 };
 
+export function readRuns(event, team) {
+	return new Promise((resolve, reject) => {
+		const db = new Dexie('strangescout');
+		versions.forEach(version => {
+			db.version(version.version).stores(version.stores);
+		});
+
+		db.runs.toArray().then(docs => {
+			let finalDocs = docs;
+			
+			if (team) {
+				finalDocs = finalDocs.filter(doc => doc.team === team);
+			}
+			if (event) {
+				finalDocs = finalDocs.filter(doc => doc.event === event);
+			}
+
+			resolve(finalDocs);
+		}, e => {
+			console.error('error reading runs from local db: ', e);
+			reject(e);
+		});
+	});
+};
+
 export function readProcessedTeams() {
 	return new Promise((resolve, reject) => {
 		const db = new Dexie('strangescout');

@@ -10,6 +10,8 @@ import { createUser } from '../../../store/user/actions';
 import { loadTemplate } from '../../../store/template/actions';
 import { syncData, readEvents } from '../../../utils/database';
 
+import { setEvents } from '../../../store/events/actions';
+
 function useQuery() {
 	return new URLSearchParams(useLocation().search);
 };
@@ -31,7 +33,7 @@ function SignUpContainer(props) {
 			props.dispatch(loadTemplate(newSession.token));
 			syncData(newSession.token).then(() => {
 				readEvents().then(events => {
-					console.log('read events: ', events);
+					props.dispatch(setEvents(events));
 				}, e => {
 					console.error('error loading events from local db: ', e);
 				});
