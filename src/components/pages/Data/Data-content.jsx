@@ -20,7 +20,7 @@ const useStyles = makeStyles(theme => ({
 
 export function DataContent(props) {
 	const classes = useStyles();
-	const { template, events, processedTeams } = props;
+	const { template, events, processedTeams, rawRuns } = props;
 
 	let startedEvents = events.filter(event => event.startDate < Date.now()).sort((a, b) => a.startDate - b.startDate);
 	
@@ -47,6 +47,7 @@ export function DataContent(props) {
 
 	const teams = [...new Set(processedTeams.filter(pro => pro.event === selection.event).map(fil => fil.team))];
 	const selectedObj = processedTeams.filter(obj => (obj.team === selection.team && obj.event === selection.event))[0];
+	const selectedRuns = rawRuns.filter(obj => (obj.team === selection.team && obj.event === selection.event));
 
 	return (
 		<div className={classes.root}>
@@ -62,7 +63,7 @@ export function DataContent(props) {
 
 				{/* if an object matches the selection AND that object has a dataset */}
 				{selectedObj && selectedObj.data && Object.keys(selectedObj.data).map(key => (
-					<DataCard key={key} template={template} topKey={key} />
+					<DataCard key={key} template={template} topKey={key} processedObject={selectedObj} teamsRuns={selectedRuns} />
 				))}
 			</div>
 		</div>
