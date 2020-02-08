@@ -31,33 +31,27 @@ export function DataContent(props) {
 		//     if any events have started, only include teams from the most recently started event
 		//     else sort events from earliest to latest, and pick the earliest
 		initialSelection.event = startedEvents.length > 0 ? startedEvents[startedEvents.length - 1].key : events.sort((a, b) => a.startDate - b.startDate)[0].key;
-		// determine available teams
-		//     filter all teams down to those at the currently selected event
-		//     sort teams in ascending order by number
-		//     map out to only the team numbers
-		let availableTeams = processedTeams
-		.filter(processed => processed.event === initialSelection.event)
-		.sort((a, b) => a.team - b.team)
-		.map(pro => pro.team);
-
+		
+		let availableTeams = events.filter(event => event.key === initialSelection.event)[0].teams ? events.filter(event => event.key === initialSelection.event)[0].teams.sort((a, b) => a - b) : [];
+		console.log(availableTeams)
 		initialSelection.team = availableTeams.length > 0 ? availableTeams[0] : null;
 	}
 	
 	const [ selection, setSelection ] = useState(initialSelection);
 
-	const teams = [...new Set(processedTeams.filter(pro => pro.event === selection.event).map(fil => fil.team))];
+	const teams = events.filter(event => event.key === selection.event)[0].teams ? events.filter(event => event.key === selection.event)[0].teams : [];
 	const selectedObj = processedTeams.filter(obj => (obj.team === selection.team && obj.event === selection.event))[0];
 	const selectedRuns = rawRuns.filter(obj => (obj.team === selection.team && obj.event === selection.event));
 
 	return (
 		<div className={classes.root}>
-			<Selector events={events} selection={selection} setSelection={setSelection} processedTeams={processedTeams} availableTeams={teams} />
+			<Selector events={events} selection={selection} setSelection={setSelection} availableTeams={teams} />
 			<div className={classes.container}>
 				{/* Handle no teams at event and no data for team at event */}
 				{teams.length < 1 &&
 					<Typography variant='h6'>No teams available!</Typography>
 				}
-				{selectedObj && !selectedObj.data &&
+				{(teams.length > 0 && (!selectedObj || (selectedObj && !selectedObj.data))) &&
 					<Typography variant='h6'>No data available!</Typography>
 				}
 

@@ -20,6 +20,10 @@ const dummyData = [
 		name: 'FNC District UNC Pembroke Event',
 		startDate: new Date('2020-03-06T05:00:00.000Z'),
 		year: 2020,
+		teams: [
+			1533,
+			254
+		],
 		updated: new Date('2020-02-04T02:10:19.031Z'),
 		__v: 0
 	},
@@ -40,6 +44,7 @@ const dummyData = [
 		name: 'FNC District Guilford County Event',
 		startDate: new Date('2020-03-20T04:00:00.000Z'),
 		year: 2020,
+		teams: [],
 		updated: new Date('2020-02-04T02:10:18.873Z'),
 		__v: 0
 	}
