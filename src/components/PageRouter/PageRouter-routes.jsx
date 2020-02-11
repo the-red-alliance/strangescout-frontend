@@ -14,7 +14,6 @@ import Invite from '../pages/Invite';
 import Account from '../pages/Account';
 import Run from '../pages/Run';
 import Data from '../pages/Data';
-import Pit from '../pages/Pit';
 
 export function PageRouter(props) {
 	return(
@@ -28,7 +27,6 @@ export function PageRouter(props) {
 					<Route exact key="/account" path="/account" component={Account} />,
 					<Route exact key="/run" path="/run" component={Run} />,
 					<Route exact key="/data" path="/data" component={Data} />,
-					<Route exact key="/pit" path="/pit" component={Pit} />,
 					<Route key="notfound" component={NotFound} />
 				].map(item => item)
 			}

@@ -57,7 +57,16 @@ export function DataCard(props) {
 						<Tooltip />
 						<Legend />
 						{availableChildren.map(childKey => (
-							<Bar key={childKey + '-bar'} dataKey={childKey} fill={'#' + string2color(childKey)} />
+							<Bar
+							key={childKey + '-bar'}
+							dataKey={childKey}
+							name={
+								template.scout.run.filter(r => r.key === topKey)[0].children.filter(c => c.key === childKey)[0].display ?
+								template.scout.run.filter(r => r.key === topKey)[0].children.filter(c => c.key === childKey)[0].display :
+								childKey
+							}
+							fill={'#' + string2color(childKey)}
+							/>
 						))}
 					</BarChart>
 				</ResponsiveContainer>
