@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 import { makeStyles } from '@material-ui/core/styles';
 import { Card, CardContent, CardHeader } from '@material-ui/core';
+import { Divider, List, ListItem, ListItemText } from '@material-ui/core';
 
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
@@ -12,6 +13,11 @@ const useStyles = makeStyles(theme => ({
 		margin: '10px',
 		maxWidth: '500px',
 		width: '100%',
+	},
+	listContainer: {
+		alignItems: 'center',
+		paddingLeft: '15px',
+		paddingRight: '15px'
 	},
 }));
 
@@ -70,6 +76,44 @@ export function DataCard(props) {
 						))}
 					</BarChart>
 				</ResponsiveContainer>
+				<div className={classes.listContainer}>
+					{Object.keys(processedObject.data[topKey]).map(key => (
+						<React.Fragment key={key}>
+							<Divider style={{marginBottom: '10px'}} />
+							<List subheader={topItem.children.filter(child => child.key === key)[0].display}>
+								{Object.keys(processedObject.data[topKey][key]).sort((k1, k2) => {
+									let possibilities = ['average', 'average_duration', 'average_bestfit'];
+									let k1i = possibilities.indexOf(k1);
+									let k2i = possibilities.indexOf(k2);
+									return k1i - k2i;
+								}).map(l2key => {
+									switch (l2key) {
+										case 'average':
+											return (
+												<ListItem key={l2key}>
+													<ListItemText primary={'Average Cycles: ' + Math.round(processedObject.data[topKey][key][l2key]*100)/100} />
+												</ListItem>
+											)
+										case 'average_duration':
+											return (
+												<ListItem key={l2key}>
+													<ListItemText primary={'Average Duration: ' + Math.round(processedObject.data[topKey][key][l2key]*100)/100 + ' seconds'} />
+												</ListItem>
+											)
+										case 'average_bestfit':
+											return (
+												<ListItem key={l2key}>
+													<ListItemText primary={'Event Trend Slope: ' + Math.round(processedObject.data[topKey][key][l2key].slope*100)/100} />
+												</ListItem>
+											)
+										default:
+											return <React.Fragment key={l2key} />
+									}
+								})}
+							</List>
+						</React.Fragment>
+					))}
+				</div>
 			</CardContent>
 		</Card>
 	);
