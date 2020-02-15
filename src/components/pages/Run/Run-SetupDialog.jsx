@@ -102,6 +102,8 @@ export function SetupDialog(props) {
 	// generate validation object from validators
 	const validation = validator.validate(state);
 
+	const selectedEvent = events.filter(event => event.key === state.event).length > 0 ? events.filter(event => event.key === state.event)[0] : null;
+
 	const handleChange = prop => event => {
 		setTouched({ ...touched, [prop]: true });
 		let newvalue;
@@ -164,15 +166,29 @@ export function SetupDialog(props) {
 						gridColumn: "1 / 2",
 						gridRow: events.length > 0 ? "2 / 3" : "1 / 2",
 					}}>
-						<InputLabel>Team</InputLabel>
-						<Input
-						id="team"
-						type="number"
-						min="0"
-						max="9999"
-						value={state.team}
-						onChange={handleChange('team')}
-						/>
+						<InputLabel id='team-label'>Team</InputLabel>
+						{(selectedEvent && selectedEvent.teams && selectedEvent.teams.length > 0) ?
+							<Select
+							labelId="team-label"
+							id="team"
+							value={state.team}
+							onChange={handleChange('team')}
+							>
+								{selectedEvent.teams.map(item => {
+									return (
+										<MenuItem key={item} value={item}>{item}</MenuItem>
+									);
+								})}
+							</Select>
+						:
+							<Input
+							id="team"
+							labelId='team-label'
+							type="number"
+							value={state.team}
+							onChange={handleChange('team')}
+							/>
+						}
 						{touched.team && validation.team.message &&
 							<FormHelperText>{validation.team.message}</FormHelperText>
 						}

@@ -126,6 +126,7 @@ const dummyTemplate = {
           type: 'single_item',
           activeTime: 0,
           display: 'Start Control Panel',
+          analysisDisplay: 'Control Panel',
           key: 'start_panel',
           children: [
             {
@@ -145,6 +146,7 @@ const dummyTemplate = {
           type: 'single_item',
           activeTime: 90,
           display: 'Start Hang',
+          analysisDisplay: 'Hang',
           key: 'start_hang',
           children: [
             {
@@ -165,6 +167,7 @@ const dummyTemplate = {
           type: 'duration',
           activeTime: 0,
           key: 'defense',
+          display: 'Defense',
           startDisplay: 'Start Defending',
           startKey: 'start_defend',
           endDisplay: 'Stop Defending',

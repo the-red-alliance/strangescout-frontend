@@ -2,17 +2,12 @@ import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 
-import { makeStyles, useTheme } from '@material-ui/core/styles';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { makeStyles } from '@material-ui/core/styles';
 
-import TeamDrawer from './TeamSelector/TeamDrawer.jsx';
-import { DataSingle } from './Data-content-single.jsx';
-import { DataAll } from './Data-content-all.jsx';
+import { DataContent } from './Data-content.jsx';
 
-import 'react-vis/dist/style.css';
-
-const drawerWidth = 150;
-const selectionBreakpoint = 'sm';
+import { readProcessedTeams, readRuns, storeLocalTeam, syncData, readTeams } from '../../../utils/database';
+import { sendNotification } from '../../../store/notifications/actions';
 
 const useStyles = makeStyles(theme => ({
 	root: {
@@ -34,57 +29,94 @@ const useStyles = makeStyles(theme => ({
 function mapStateToProps(state) {
 	return {
 		user: state.user,
-		template: state.template
+		template: state.template,
+		events: state.events,
 	};
 };
 
-const dummyProcessed = [
-	JSON.parse('{"event":"N/A","notes":[],"team":1533,"matches":12,"data":{"start_defend":{"average_duration": 100}, "get_hatch":{"cargo_hatch":{"average":3,"average_bestfit":{"yintercept":1,"slope":1}},"drop_hatch":{"average":1,"average_bestfit":{"yintercept":1,"slope":0}}},"get_cargo":{"top_cargo":{"average":1,"average_bestfit":{"yintercept":1,"slope":0}},"middle_cargo":{"average":2,"average_bestfit":{"yintercept":2,"slope":0}},"bottom_cargo":{"average":1,"average_bestfit":{"yintercept":1,"slope":0}}}},"updated":"2020-01-04T16:00:31.962Z","__v":0}')
-];
-const dummyRuns = [
-	JSON.parse('{"event":"N/A","_id":"5e0191b5b17998000830e7dc","team":1533,"match":1,"position":"1_right","journal":[{"_id":"5e0191b5b17998000830e7f2","event":"start_defend","time":1},{"_id":"5e0191b5b17998000830e7f1","event":"end_defend","time":1},{"_id":"5e0191b5b17998000830e7ee","event":"get_cargo","time":5},{"_id":"5e0191b5b17998000830e7ed","event":"middle_cargo","time":5},{"_id":"5e0191b5b17998000830e7ec","event":"get_hatch","time":6},{"_id":"5e0191b5b17998000830e7eb","event":"cargo_hatch","time":7},{"_id":"5e0191b5b17998000830e7ea","event":"get_hatch","time":8},{"_id":"5e0191b5b17998000830e7e9","event":"cargo_hatch","time":9},{"_id":"5e0191b5b17998000830e7e8","event":"get_hatch","time":10},{"_id":"5e0191b5b17998000830e7e7","event":"drop_hatch","time":11},{"_id":"5e0191b5b17998000830e7e6","event":"get_cargo","time":12},{"_id":"5e0191b5b17998000830e7e5","event":"middle_cargo","time":13},{"_id":"5e0191b5b17998000830e7e4","event":"get_cargo","time":14},{"_id":"5e0191b5b17998000830e7e3","event":"bottom_cargo","time":15},{"_id":"5e0191b5b17998000830e7e2","event":"get_cargo","time":15},{"_id":"5e0191b5b17998000830e7e1","event":"top_cargo","time":16},{"_id":"5e0191b5b17998000830e7e0","event":"start_defend","time":18},{"_id":"5e0191b5b17998000830e7df","event":"end_defend","time":24},{"_id":"5e0191b5b17998000830e7de","event":"start_climb","time":125},{"_id":"5e0191b5b17998000830e7dd","event":"climb_3","time":135}],"notes":"testing","scouter":"penguinsnail@onebuttonmouse.com","updated":"2019-12-24T04:19:01.913Z","__v":0}'),
-	JSON.parse('{"event":"N/A","_id":"5e0191b5b17998000830e7dc","team":1533,"match":1,"position":"1_right","journal":[{"_id":"5e0191b5b17998000830e7f2","event":"start_defend","time":1},{"_id":"5e0191b5b17998000830e7f1","event":"end_defend","time":1},{"_id":"5e0191b5b17998000830e7f0","event":"get_hatch","time":3},{"_id":"5e0191b5b17998000830e7ef","event":"cargo_hatch","time":4},{"_id":"5e0191b5b17998000830e7ee","event":"get_cargo","time":5},{"_id":"5e0191b5b17998000830e7ed","event":"middle_cargo","time":5},{"_id":"5e0191b5b17998000830e7ec","event":"get_hatch","time":6},{"_id":"5e0191b5b17998000830e7eb","event":"cargo_hatch","time":7},{"_id":"5e0191b5b17998000830e7ea","event":"get_hatch","time":8},{"_id":"5e0191b5b17998000830e7e9","event":"cargo_hatch","time":9},{"_id":"5e0191b5b17998000830e7e8","event":"get_hatch","time":10},{"_id":"5e0191b5b17998000830e7e7","event":"drop_hatch","time":11},{"_id":"5e0191b5b17998000830e7e6","event":"get_cargo","time":12},{"_id":"5e0191b5b17998000830e7e5","event":"middle_cargo","time":13},{"_id":"5e0191b5b17998000830e7e4","event":"get_cargo","time":14},{"_id":"5e0191b5b17998000830e7e3","event":"bottom_cargo","time":15},{"_id":"5e0191b5b17998000830e7e2","event":"get_cargo","time":15},{"_id":"5e0191b5b17998000830e7e1","event":"top_cargo","time":16},{"_id":"5e0191b5b17998000830e7e0","event":"start_defend","time":18},{"_id":"5e0191b5b17998000830e7df","event":"end_defend","time":24},{"_id":"5e0191b5b17998000830e7de","event":"start_climb","time":125},{"_id":"5e0191b5b17998000830e7dd","event":"climb_3","time":135}],"notes":"testing","scouter":"penguinsnail@onebuttonmouse.com","updated":"2019-12-24T04:19:01.913Z","__v":0}')
-];
-
 function DataContainer(props) {
 	const classes = useStyles();
-	const theme = useTheme();
-	const smallBreakpoint = useMediaQuery(theme.breakpoints.up(selectionBreakpoint));
 	
-	const { template } = props;
-	const [ selected, setSelected ] = useState('all');
+	const { user, template, events } = props;
+	const [ processed, setProcessed ] = useState([]);
+	const [ dbRead, setDbRead ] = useState(false);
+	const [ runs, setRuns ] = useState([]);
+	const [ pits, setPits ] = useState([]);
 
 	// redirect to the login page if the user isn't logged in
 	// this has to be put after hook calls or else react errors
-	if (process.env.NODE_ENV === 'production' && !props.user.loggedin) return <Redirect to={"/login"} />;
+	if (process.env.NODE_ENV === 'production' && !user.loggedin) return <Redirect to={"/login"} />;
 
-	const teamsData = dummyProcessed;
-	const runsData = dummyRuns;
-	
-	// map our processed teams data to create a list of available teams
-	const teamsList = teamsData.map(value => value.team);
-	// if we have a specific team selected
-	// create a data object for the specific team
-	// contains spread processed data and array of runs
-	const selectedTeamData = selected !== 'all' ?
-		{
-			...teamsData.filter(value => value.team === selected)[0],
-			runs: runsData.filter(value => value.team === selected)
+	if (!dbRead) {
+		if (process.env.NODE_ENV === 'production') {
+			readProcessedTeams().then(docs => {
+				setProcessed(docs);
+				readRuns().then(newRuns => {
+					setRuns(newRuns);
+					readTeams().then(newTeams => {
+						setPits(newTeams);
+						setDbRead(true);
+					});
+				});
+			});
+		} else {
+			setProcessed([
+				JSON.parse('{"event":"2020ncpem","notes":[],"_id":"5e3a0a149b88210008cacf6a","team":1533,"matches":2,"data":{"power_cells":{"upper_cell":{"average":16,"average_bestfit":{"yintercept":4,"slope":8},"average_duration":8.46875},"lower_cell":{"average":1,"average_bestfit":{"yintercept":-2,"slope":2},"average_duration":3},"drop_cell":{"average":1.5,"average_bestfit":{"yintercept":0,"slope":1},"average_duration":13.666666666666666}},"start_panel":{"successful_panel":{"average":2,"average_bestfit":{"yintercept":2,"slope":0},"average_duration":7,"average_duration_bestfit":{"yintercept":7,"slope":0}}},"start_hang":{"successful_hang":{"average":1,"average_bestfit":{"yintercept":1,"slope":0},"average_duration":9,"average_duration_bestfit":{"yintercept":6,"slope":2}}}},"updated":"2020-02-05T00:19:32.202Z","__v":0}')
+			]);
+			setRuns([
+				JSON.parse('{"event":"2020ncpem","_id":"5e3a081644497700079b9e45","team":1533,"match":1,"position":"middle","journal":[{"_id":"5e3a081644497700079b9e67","event":"get_cell","time":23},{"_id":"5e3a081644497700079b9e66","event":"get_cell","time":24},{"_id":"5e3a081644497700079b9e65","event":"get_cell","time":25},{"_id":"5e3a081644497700079b9e64","event":"get_cell","time":26},{"_id":"5e3a081644497700079b9e63","event":"get_cell","time":28},{"_id":"5e3a081644497700079b9e62","event":"upper_cell","time":33},{"_id":"5e3a081644497700079b9e61","event":"upper_cell","time":33},{"_id":"5e3a081644497700079b9e60","event":"upper_cell","time":34},{"_id":"5e3a081644497700079b9e5f","event":"upper_cell","time":34},{"_id":"5e3a081644497700079b9e5e","event":"upper_cell","time":35},{"_id":"5e3a081644497700079b9e5d","event":"start_panel","time":38},{"_id":"5e3a081644497700079b9e5c","event":"successful_panel","time":44},{"_id":"5e3a081644497700079b9e5b","event":"get_cell","time":50},{"_id":"5e3a081644497700079b9e5a","event":"get_cell","time":50},{"_id":"5e3a081644497700079b9e59","event":"get_cell","time":51},{"_id":"5e3a081644497700079b9e58","event":"get_cell","time":53},{"_id":"5e3a081644497700079b9e57","event":"upper_cell","time":56},{"_id":"5e3a081644497700079b9e56","event":"upper_cell","time":56},{"_id":"5e3a081644497700079b9e55","event":"upper_cell","time":56},{"_id":"5e3a081644497700079b9e54","event":"get_cell","time":62},{"_id":"5e3a081644497700079b9e53","event":"get_cell","time":63},{"_id":"5e3a081644497700079b9e52","event":"get_cell","time":63},{"_id":"5e3a081644497700079b9e51","event":"get_cell","time":64},{"_id":"5e3a081644497700079b9e50","event":"upper_cell","time":66},{"_id":"5e3a081644497700079b9e4f","event":"upper_cell","time":66},{"_id":"5e3a081644497700079b9e4e","event":"upper_cell","time":67},{"_id":"5e3a081644497700079b9e4d","event":"drop_cell","time":68},{"_id":"5e3a081644497700079b9e4c","event":"upper_cell","time":69},{"_id":"5e3a081644497700079b9e4b","event":"start_defend","time":84},{"_id":"5e3a081644497700079b9e4a","event":"end_defend","time":104},{"_id":"5e3a081644497700079b9e49","event":"start_panel","time":107},{"_id":"5e3a081644497700079b9e48","event":"successful_panel","time":115},{"_id":"5e3a081644497700079b9e47","event":"start_hang","time":122},{"_id":"5e3a081644497700079b9e46","event":"successful_hang","time":130}],"notes":"test","scouter":"penguinsnail@onebuttonmouse.com","updated":"2020-02-05T00:11:02.744Z","__v":0}'),
+				JSON.parse('{"event":"2020ncpem","_id":"5e38cd16dfc0e10007d7835a","team":1533,"match":13,"position":"middle","journal":[{"_id":"5e38cd16dfc0e10007d78395","event":"get_cell","time":0},{"_id":"5e38cd16dfc0e10007d78394","event":"get_cell","time":0},{"_id":"5e38cd16dfc0e10007d78393","event":"upper_cell","time":12},{"_id":"5e38cd16dfc0e10007d78392","event":"upper_cell","time":12},{"_id":"5e38cd16dfc0e10007d78391","event":"get_cell","time":16},{"_id":"5e38cd16dfc0e10007d78390","event":"get_cell","time":16},{"_id":"5e38cd16dfc0e10007d7838f","event":"get_cell","time":17},{"_id":"5e38cd16dfc0e10007d7838e","event":"get_cell","time":18},{"_id":"5e38cd16dfc0e10007d7838d","event":"get_cell","time":19},{"_id":"5e38cd16dfc0e10007d7838c","event":"upper_cell","time":24},{"_id":"5e38cd16dfc0e10007d7838b","event":"upper_cell","time":24},{"_id":"5e38cd16dfc0e10007d7838a","event":"upper_cell","time":24},{"_id":"5e38cd16dfc0e10007d78389","event":"upper_cell","time":25},{"_id":"5e38cd16dfc0e10007d78388","event":"upper_cell","time":25},{"_id":"5e38cd16dfc0e10007d78387","event":"start_panel","time":31},{"_id":"5e38cd16dfc0e10007d78386","event":"successful_panel","time":37},{"_id":"5e38cd16dfc0e10007d78385","event":"get_cell","time":40},{"_id":"5e38cd16dfc0e10007d78384","event":"get_cell","time":43},{"_id":"5e38cd16dfc0e10007d78383","event":"get_cell","time":44},{"_id":"5e38cd16dfc0e10007d78382","event":"get_cell","time":45},{"_id":"5e38cd16dfc0e10007d78381","event":"get_cell","time":47},{"_id":"5e38cd16dfc0e10007d78380","event":"upper_cell","time":48},{"_id":"5e38cd16dfc0e10007d7837f","event":"upper_cell","time":49},{"_id":"5e38cd16dfc0e10007d7837e","event":"drop_cell","time":50},{"_id":"5e38cd16dfc0e10007d7837d","event":"upper_cell","time":50},{"_id":"5e38cd16dfc0e10007d7837c","event":"upper_cell","time":51},{"_id":"5e38cd16dfc0e10007d7837b","event":"get_cell","time":54},{"_id":"5e38cd16dfc0e10007d7837a","event":"get_cell","time":55},{"_id":"5e38cd16dfc0e10007d78379","event":"get_cell","time":57},{"_id":"5e38cd16dfc0e10007d78378","event":"start_defend","time":64},{"_id":"5e38cd16dfc0e10007d78377","event":"end_defend","time":72},{"_id":"5e38cd16dfc0e10007d78376","event":"get_cell","time":81},{"_id":"5e38cd16dfc0e10007d78375","event":"get_cell","time":82},{"_id":"5e38cd16dfc0e10007d78374","event":"drop_cell","time":84},{"_id":"5e38cd16dfc0e10007d78373","event":"upper_cell","time":85},{"_id":"5e38cd16dfc0e10007d78372","event":"upper_cell","time":85},{"_id":"5e38cd16dfc0e10007d78371","event":"upper_cell","time":86},{"_id":"5e38cd16dfc0e10007d78370","event":"upper_cell","time":86},{"_id":"5e38cd16dfc0e10007d7836f","event":"start_panel","time":89},{"_id":"5e38cd16dfc0e10007d7836e","event":"successful_panel","time":97},{"_id":"5e38cd16dfc0e10007d7836d","event":"get_cell","time":108},{"_id":"5e38cd16dfc0e10007d7836c","event":"get_cell","time":109},{"_id":"5e38cd16dfc0e10007d7836b","event":"get_cell","time":109},{"_id":"5e38cd16dfc0e10007d7836a","event":"lower_cell","time":111},{"_id":"5e38cd16dfc0e10007d78369","event":"lower_cell","time":112},{"_id":"5e38cd16dfc0e10007d78368","event":"get_cell","time":114},{"_id":"5e38cd16dfc0e10007d78367","event":"get_cell","time":114},{"_id":"5e38cd16dfc0e10007d78366","event":"get_cell","time":115},{"_id":"5e38cd16dfc0e10007d78365","event":"get_cell","time":115},{"_id":"5e38cd16dfc0e10007d78364","event":"upper_cell","time":117},{"_id":"5e38cd16dfc0e10007d78363","event":"upper_cell","time":118},{"_id":"5e38cd16dfc0e10007d78362","event":"upper_cell","time":118},{"_id":"5e38cd16dfc0e10007d78361","event":"get_cell","time":122},{"_id":"5e38cd16dfc0e10007d78360","event":"get_cell","time":122},{"_id":"5e38cd16dfc0e10007d7835f","event":"get_cell","time":123},{"_id":"5e38cd16dfc0e10007d7835e","event":"upper_cell","time":124},{"_id":"5e38cd16dfc0e10007d7835d","event":"upper_cell","time":125},{"_id":"5e38cd16dfc0e10007d7835c","event":"start_hang","time":128},{"_id":"5e38cd16dfc0e10007d7835b","event":"successful_hang","time":138}],"notes":"test 1","scouter":"penguinsnail@onebuttonmouse.com","updated":"2020-02-04T01:47:02.152Z","__v":0}'),
+				JSON.parse('{"event":"2020ncpem","_id":"5e38cd16dfc0e10007d7835a","team":1533,"match":10,"position":"middle","journal":[{"_id":"5e38cd16dfc0e10007d78395","event":"get_cell","time":0},{"_id":"5e38cd16dfc0e10007d78394","event":"get_cell","time":0},{"_id":"5e38cd16dfc0e10007d78393","event":"upper_cell","time":12},{"_id":"5e38cd16dfc0e10007d78392","event":"upper_cell","time":12},{"_id":"5e38cd16dfc0e10007d78391","event":"get_cell","time":16},{"_id":"5e38cd16dfc0e10007d78390","event":"get_cell","time":16},{"_id":"5e38cd16dfc0e10007d7838f","event":"get_cell","time":17},{"_id":"5e38cd16dfc0e10007d7838e","event":"get_cell","time":18},{"_id":"5e38cd16dfc0e10007d7838d","event":"get_cell","time":19},{"_id":"5e38cd16dfc0e10007d7838c","event":"upper_cell","time":24},{"_id":"5e38cd16dfc0e10007d7838b","event":"upper_cell","time":24},{"_id":"5e38cd16dfc0e10007d7838a","event":"upper_cell","time":24},{"_id":"5e38cd16dfc0e10007d78389","event":"upper_cell","time":25},{"_id":"5e38cd16dfc0e10007d78388","event":"upper_cell","time":25},{"_id":"5e38cd16dfc0e10007d78387","event":"start_panel","time":31},{"_id":"5e38cd16dfc0e10007d78386","event":"successful_panel","time":37},{"_id":"5e38cd16dfc0e10007d78385","event":"get_cell","time":40},{"_id":"5e38cd16dfc0e10007d78384","event":"get_cell","time":43},{"_id":"5e38cd16dfc0e10007d78383","event":"get_cell","time":44},{"_id":"5e38cd16dfc0e10007d78382","event":"get_cell","time":45},{"_id":"5e38cd16dfc0e10007d78381","event":"get_cell","time":47},{"_id":"5e38cd16dfc0e10007d78380","event":"upper_cell","time":48},{"_id":"5e38cd16dfc0e10007d7837f","event":"upper_cell","time":49},{"_id":"5e38cd16dfc0e10007d7837e","event":"drop_cell","time":50},{"_id":"5e38cd16dfc0e10007d7837d","event":"upper_cell","time":50},{"_id":"5e38cd16dfc0e10007d7837c","event":"upper_cell","time":51},{"_id":"5e38cd16dfc0e10007d7837b","event":"get_cell","time":54},{"_id":"5e38cd16dfc0e10007d7837a","event":"get_cell","time":55},{"_id":"5e38cd16dfc0e10007d78379","event":"get_cell","time":57},{"_id":"5e38cd16dfc0e10007d78378","event":"start_defend","time":64},{"_id":"5e38cd16dfc0e10007d78377","event":"end_defend","time":72},{"_id":"5e38cd16dfc0e10007d78376","event":"get_cell","time":81},{"_id":"5e38cd16dfc0e10007d78375","event":"get_cell","time":82},{"_id":"5e38cd16dfc0e10007d78374","event":"drop_cell","time":84},{"_id":"5e38cd16dfc0e10007d78373","event":"upper_cell","time":85},{"_id":"5e38cd16dfc0e10007d78372","event":"upper_cell","time":85},{"_id":"5e38cd16dfc0e10007d78371","event":"upper_cell","time":86},{"_id":"5e38cd16dfc0e10007d78370","event":"upper_cell","time":86},{"_id":"5e38cd16dfc0e10007d7836f","event":"start_panel","time":89},{"_id":"5e38cd16dfc0e10007d7836e","event":"successful_panel","time":97},{"_id":"5e38cd16dfc0e10007d7836d","event":"get_cell","time":108},{"_id":"5e38cd16dfc0e10007d7836c","event":"get_cell","time":109},{"_id":"5e38cd16dfc0e10007d7836b","event":"get_cell","time":109},{"_id":"5e38cd16dfc0e10007d7836a","event":"lower_cell","time":111},{"_id":"5e38cd16dfc0e10007d78369","event":"lower_cell","time":112},{"_id":"5e38cd16dfc0e10007d78368","event":"get_cell","time":114},{"_id":"5e38cd16dfc0e10007d78367","event":"get_cell","time":114},{"_id":"5e38cd16dfc0e10007d78366","event":"get_cell","time":115},{"_id":"5e38cd16dfc0e10007d78365","event":"get_cell","time":115},{"_id":"5e38cd16dfc0e10007d78364","event":"upper_cell","time":117},{"_id":"5e38cd16dfc0e10007d78363","event":"upper_cell","time":118},{"_id":"5e38cd16dfc0e10007d78362","event":"upper_cell","time":118},{"_id":"5e38cd16dfc0e10007d78361","event":"get_cell","time":122},{"_id":"5e38cd16dfc0e10007d78360","event":"get_cell","time":122},{"_id":"5e38cd16dfc0e10007d7835f","event":"get_cell","time":123},{"_id":"5e38cd16dfc0e10007d7835e","event":"upper_cell","time":124},{"_id":"5e38cd16dfc0e10007d7835d","event":"upper_cell","time":125},{"_id":"5e38cd16dfc0e10007d7835c","event":"start_hang","time":128},{"_id":"5e38cd16dfc0e10007d7835b","event":"successful_hang","time":138}],"notes":"test 1","scouter":"penguinsnail@onebuttonmouse.com","updated":"2020-02-04T01:47:02.152Z","__v":0}')
+			]);
+			setPits([
+				{
+					event: '2020ncpem',
+					team: 254,
+					data: {
+						ground_clearance: 2,
+						control_panel: true,
+						drivetrain: 'swerve'
+					}
+				}
+			]);
+			setDbRead(true);
 		}
-	:
-		{};
+	}
+
+	const updatePit = (event, team, data) => {
+		// store the team doc to local db
+		storeLocalTeam({team: team, event: event, data: data}).then(() => {
+			// on successful store
+			// async sync data with the server
+			syncData(user.session.token).then(() => {
+				// notification on success
+				props.dispatch(sendNotification({
+					variant: 'success',
+					text: 'Updated data!'
+				}));
+			}, (e) => {
+				// error handling
+				// log to console and notify the user
+				console.error('failed to sync pits ', e);
+				props.dispatch(sendNotification({
+					variant: 'error',
+					text: 'Failed to sync data!'
+				}));
+			});
+		}, (e) => {
+			// error handling
+			// log to console and notify the user
+			console.error('failed to save pit ', e);
+			props.dispatch(sendNotification({
+				variant: 'error',
+				text: 'Failed to store data!'
+			}));
+		});
+	};
 
 	return (
 		<div className={classes.root}>
-			{ smallBreakpoint && <TeamDrawer width={drawerWidth} teams={teamsList} selected={selected} onSelect={value => {setSelected(value)}} /> }
-			<div id="content" className={classes.content}>
-				{ selected === 'all' ?
-					<DataAll template={template} teamsData={teamsData} />
-				:
-					<DataSingle template={template} teamData={selectedTeamData} />
-				}
-				{}
-			</div>
+			{true && <DataContent template={template} events={events} processedTeams={processed} rawRuns={runs.sort((a, b) => a.match - b.match)} updatePit={updatePit} pits={pits} />}
 		</div>
 	);
 };

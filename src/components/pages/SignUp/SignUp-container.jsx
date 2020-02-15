@@ -8,7 +8,9 @@ import { SignUp } from './SignUp-content.jsx';
 
 import { createUser } from '../../../store/user/actions';
 import { loadTemplate } from '../../../store/template/actions';
-import { syncData } from '../../../utils/database';
+import { syncData, readEvents } from '../../../utils/database';
+
+import { setEvents } from '../../../store/events/actions';
 
 function useQuery() {
 	return new URLSearchParams(useLocation().search);
@@ -29,7 +31,13 @@ function SignUpContainer(props) {
 		if (success) {
 			history.push('/');
 			props.dispatch(loadTemplate(newSession.token));
-			syncData(newSession.token).then(null, (e) => console.error('error syncing data: ', e));
+			syncData(newSession.token).then(() => {
+				readEvents().then(events => {
+					props.dispatch(setEvents(events));
+				}, e => {
+					console.error('error loading events from local db: ', e);
+				});
+			}, e => console.error('error syncing data: ', e));
 		};
 	};
 
