@@ -83,7 +83,7 @@ function DataContainer(props) {
 		}
 	}
 
-	const updatePit = (team, event, data) => {
+	const updatePit = (event, team, data) => {
 		// store the team doc to local db
 		storeLocalTeam({team: team, event: event, data: data}).then(() => {
 			// on successful store
