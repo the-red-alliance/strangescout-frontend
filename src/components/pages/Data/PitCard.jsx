@@ -1,3 +1,18 @@
+/*
+ * Renders a pit card
+ * Data Dashboard > Event > Team > Pit Card
+ * 
+ * Takes:
+ * - game template
+ * - event key
+ * - team number
+ * - the current value of the pit scout
+ * - a submit function
+ * 
+ * Card includes:
+ * - generated form based on the given template to scout a pit
+ */
+
 import React, { useState } from 'react';
 
 import { makeStyles } from '@material-ui/core/styles';

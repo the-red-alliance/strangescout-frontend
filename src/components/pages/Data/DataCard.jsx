@@ -102,8 +102,14 @@ export function DataCard(props) {
 						<Legend />
 						{/*
 							For each of the available child keys in the processed objects:
-								Render a bar on the chart:
-									`key` is required by map
+							- Render a bar on the chart:
+								- `key` is required by map
+								- `dataKey` is a string specifying which value in the datapoint to use
+								- `name` sets the name of the datapoints/bars
+									If the element has display text use it, otherwise default to the underlying key
+								- `fill` sets the fill color of the bar
+									Set by converting the key to a hex color code
+
 						*/}
 						{availableChildren.map(childKey => (
 							<Bar
@@ -120,16 +126,29 @@ export function DataCard(props) {
 					</BarChart>
 				</ResponsiveContainer>
 				<div className={classes.listContainer}>
+					{/*
+						For each of the child keys under the element in the processed object:
+							- Map to a fragment to contain a data list
+					*/}
 					{Object.keys(processedObject.data[topKey]).map(key => (
 						<React.Fragment key={key}>
+							{/* Render a divider with some margin to help visually distinguish sections */}
 							<Divider style={{marginBottom: '15px'}} />
+							{/* Render a list with header set to the display name of the child of the top element that this list is for */}
 							<List className={classes.list} subheader={<Typography>{topItem.children.filter(child => child.key === key)[0].display}</Typography>}>
+								{/*
+									For each key of the processed objects under the child key
+									- sort them by a predetermined order
+									- then map by the keys to a switch case
+								*/}
 								{Object.keys(processedObject.data[topKey][key]).sort((k1, k2) => {
 									let possibilities = ['average', 'average_duration', 'average_bestfit'];
 									let k1i = possibilities.indexOf(k1);
 									let k2i = possibilities.indexOf(k2);
 									return k1i - k2i;
 								}).map(l2key => {
+									// switch/case through the key to render a list item for each processed data point
+									// default to blank to ignore unknown datapoints
 									switch (l2key) {
 										case 'average':
 											return (
