@@ -42,7 +42,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 function ChildDialog(props) {
-	const { event, open, onGet, onChild, onUndo, onHold, held } = props;
+	const { event, open, onGet, onChild, onUndo, onHold, held, journalLength } = props;
 	const { children } = event;
 	// lets us use the old styles
 	const classes = useStyles({ children: event.children });
@@ -134,7 +134,7 @@ function ChildDialog(props) {
 						color="secondary"
 						className={classes.button}
 						onClick={onUndo}
-						disabled={children.length < 1}
+						disabled={children.length < 1 || journalLength < 1}
 						>
 							Undo
 						</Button>
@@ -209,9 +209,31 @@ export function MultiItem(props) {
 		setHeld(held - 1);
 	};
 
+	const onUndo = () => {
+		if (runState.journal.length < 1) return;
+
+		let newRenderState = {
+			...renderState,
+			lastUndo: runState.journal[runState.journal.length - 1],
+		};
+
+		let newRunState = {
+			...runState,
+			journal: [
+				...runState.journal
+			],
+		};
+
+		newRunState.journal.pop();
+		newRenderState.readableEventLog.pop();
+
+		setRenderState(newRenderState);
+		setRunState(newRunState);
+	};
+
 	return (
 		<React.Fragment>
-			<ChildDialog event={event} open={open} onGet={onGet} onChild={onChild} onHold={() => setOpen(false)} onUndo={() => {}} held={held} />
+			<ChildDialog event={event} open={open} onGet={onGet} onChild={onChild} onHold={() => setOpen(false)} onUndo={onUndo} held={held} journalLength={runState.journal.length} />
 			<Button
 			variant="contained"
 			color="primary"

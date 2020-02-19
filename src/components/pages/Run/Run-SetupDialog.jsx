@@ -40,13 +40,6 @@ const validator = new formValidator([
 		validWhen: true,
 		message: 'Match must be a number'
 	},
-	{
-		
-		field: 'position',
-		method: 'isEmpty',
-		validWhen: false,
-		message: 'Position is required'
-	},
 ]);
 
 const useStyles = makeStyles(theme => ({
@@ -62,7 +55,7 @@ const useStyles = makeStyles(theme => ({
 		width: "100%",
 		display: "grid",
 		gridTemplateColumns: "1fr",
-		gridTemplateRows: props => props.events.length > 0 ? "1fr 1fr 1fr 1fr 1fr" : "1fr 1fr 1fr 1fr",
+		gridTemplateRows: props => props.events.length > 0 ? "1fr 1fr 1fr 1fr" : "1fr 1fr 1fr",
 		gridGap: "20px",
 	},
 
@@ -146,7 +139,7 @@ export function SetupDialog(props) {
 						}}>
 							<InputLabel id="event-label">Event</InputLabel>
 							<Select
-								labelId="event-label"
+								labelid="event-label"
 								id="event"
 								value={state.event}
 								onChange={handleChange('event')}
@@ -169,7 +162,7 @@ export function SetupDialog(props) {
 						<InputLabel id='team-label'>Team</InputLabel>
 						{(selectedEvent && selectedEvent.teams && selectedEvent.teams.length > 0) ?
 							<Select
-							labelId="team-label"
+							labelid="team-label"
 							id="team"
 							value={state.team}
 							onChange={handleChange('team')}
@@ -183,7 +176,7 @@ export function SetupDialog(props) {
 						:
 							<Input
 							id="team"
-							labelId='team-label'
+							labelid='team-label'
 							type="number"
 							value={state.team}
 							onChange={handleChange('team')}
@@ -211,38 +204,15 @@ export function SetupDialog(props) {
 							<FormHelperText>{validation.match.message}</FormHelperText>
 						}
 					</FormControl>
-					<FormControl error={touched.position && validation.position.isInvalid}
+					<FormControl
 					style={{
 						display: 'flex',
 						gridColumn: "1 / 2",
 						gridRow: events.length > 0 ? "4 / 5" : "3 / 4",
 					}}>
-						<InputLabel id="robot-start-position-label">Starting Position</InputLabel>
-						<Select
-							labelId="robot-start-position-label"
-							id="robot-start-position"
-							value={state.position}
-							onChange={handleChange('position')}
-						>
-							{template.positions.map(item => {
-								return (
-									<MenuItem key={item.key} value={item.key}>{item.display}</MenuItem>
-								);
-							})}
-						</Select>
-						{touched.position && validation.position.message &&
-							<FormHelperText>{validation.position.message}</FormHelperText>
-						}
-					</FormControl>
-					<FormControl
-					style={{
-						display: 'flex',
-						gridColumn: "1 / 2",
-						gridRow: events.length > 0 ? "5 / 6" : "4 / 5",
-					}}>
 						<InputLabel id="robot-loadout-label">Loadout</InputLabel>
 						<Select
-							labelId="robot-loadout-label"
+							labelid="robot-loadout-label"
 							id="robot-loadout"
 							value={state.loadout}
 							onChange={handleChange('loadout')}

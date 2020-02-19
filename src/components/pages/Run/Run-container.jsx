@@ -39,12 +39,11 @@ export function RunContainer(props) {
 	});
 
 	// current state of the run
-	// team number, match number, starting position, run journal, endgame fields, notes
+	// team number, match number, run journal, endgame fields, notes
 	const [ runState, setRunState ] = useState({
 		event: '',
 		team: '',
 		match: '',
-		position: '',
 		journal: [],
 		endgameFields: {},
 		notes: '',
