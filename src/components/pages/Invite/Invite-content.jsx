@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 // for styles
 import { makeStyles } from '@material-ui/core/styles';
-import clsx from 'clsx';
 // cards
 import { Card, CardHeader, CardContent, CardActions } from '@material-ui/core';
 // forms
@@ -65,34 +64,6 @@ const useStyles = makeStyles(theme => ({
 		},
 		gridGap: "10px",
 		marginBottom: '10px',
-	},
-	row1: {
-		gridRow: "1 / 2",
-		gridColumn: "1 / 2",
-	},
-	row2: {
-		gridRow: "2 / 3",
-		gridColumn: "1 / 2",
-	},
-	row3: {
-		gridRow: "3 / 4",
-		gridColumn: "1 / 2",
-	},
-	row4: {
-		gridRow: "4 / 5",
-		gridColumn: "1 / 2",
-	},
-	row5: {
-		gridRow: "5 / 6",
-		gridColumn: "1 / 2",
-	},
-	row6: {
-		gridRow: "6 / 7",
-		gridColumn: "1 / 2",
-	},
-	row7: {
-		gridRow: "7 / 8",
-		gridColumn: "1 / 2",
 	},
 
 	input: {
@@ -171,12 +142,22 @@ export function Invite(props) {
 				<CardContent>
 					{ !props.invite.invite.code ?
 						<div className={classes.container}>
-							<FormControlLabel className={clsx(classes.row1)}
+							<FormControlLabel
+							style={{
+								gridColumn: "1 / 2",
+								gridRow: "1 / 2"
+							}}
 							control={<Checkbox checked={single} onChange={() => {toggleSingle()}} />}
 							label="Invite a single user"
 							/>
 							{ single &&
-								<FormControl className={clsx(classes.row2, classes.input)}>
+								<FormControl
+								className={classes.input}
+								style={{
+									gridColumn: "1 / 2",
+									gridRow: "2 / 3"
+								}}
+								>
 									<InputLabel>Invited Email</InputLabel>
 									<Input
 									id="email"
@@ -194,43 +175,74 @@ export function Invite(props) {
 									: ''}
 								</FormControl>
 							}
-							<FormControlLabel className={clsx(single ? classes.row3 : classes.row2)}
+							<FormControlLabel
+							style={{
+								gridColumn: "1 / 2",
+								gridRow: !single ? "2 / 3" : "3 / 4"
+							}}
 							control={<Checkbox checked={state.invite} onChange={() => {toggleChecked('invite')}} />}
 							label="Invited user can invite new users"
 							/>
 							{ props.admin &&
-								<FormControlLabel className={clsx(single ? classes.row4 : classes.row3)}
+								<FormControlLabel
+								style={{
+									gridColumn: "1 / 2",
+									gridRow: !single ? "3 / 4" : "4 / 5"
+								}}
 								control={<Checkbox checked={state.admin} onChange={() => {toggleChecked('admin')}} />}
 								label="Invited user is an admin"
 								/>
 							}
 							<FormControlLabel
-							className={clsx(() => {
-								let index = 3;
-								if (props.admin) index = index + 1;
-								if (state.single) index = index + 1;
-								return classes['row'+index];
-							})}
+							style={{
+								gridColumn: "1 / 2",
+								gridRow: () => {
+									let row = 4;
+									if (single) {
+										row = row + 1;
+									}
+									if (props.admin) {
+										row = row + 1;
+									}
+									return row + " / " (row + 1);
+								}
+							}}
 							control={<Checkbox checked={state.single} onChange={() => {toggleChecked('single')}} />}
 							label="Invite is single-use"
 							/>
 							<FormControlLabel
-							className={clsx(() => {
-								let index = 4;
-								if (props.admin) index = index + 1;
-								if (single) index = index + 1;
-								return classes['row'+index];
-							})}
+							style={{
+								gridColumn: "1 / 2",
+								gridRow: () => {
+									let row = 5;
+									if (single) {
+										row = row + 1;
+									}
+									if (props.admin) {
+										row = row + 1;
+									}
+									return row + " / " (row + 1);
+								}
+							}}
 							control={<Checkbox checked={expires} onChange={toggleExpires} />}
 							label="Invite expires"
 							/>
 							{ expires &&
-								<FormControl className={clsx(() => {
-									let index = 4;
-									if (props.admin) index = index + 1;
-									if (single) index = index + 1;
-									return classes['row'+index];
-								}, classes.input)}>
+								<FormControl className={classes.input}
+								style={{
+									gridColumn: "1 / 2",
+									gridRow: () => {
+										let row = 6;
+										if (single) {
+											row = row + 1;
+										}
+										if (props.admin) {
+											row = row + 1;
+										}
+										return row + " / " (row + 1);
+									}
+								}}
+								>
 									<InputLabel>Invite Duration (hours)</InputLabel>
 									<Input
 									id="duration"
