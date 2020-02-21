@@ -19,7 +19,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { Card, CardContent, CardHeader, Typography } from '@material-ui/core';
 import { Divider, List, ListItem, ListItemText } from '@material-ui/core';
 
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { ResponsiveContainer, BarChart, PieChart, Pie, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
 // small script to calculate a hex color from a string
 // used to pick colors for visualizations
@@ -42,6 +42,22 @@ const useStyles = makeStyles(theme => ({
 	},
 }));
 
+/* http://recharts.org/en-US/examples/PieChartWithCustomizedLabel */
+const RADIAN = Math.PI / 180;
+const renderCustomizedLabel = ({
+	cx, cy, midAngle, innerRadius, outerRadius, percent, index,
+}) => {
+	const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+	const x = cx + radius * Math.cos(-midAngle * RADIAN);
+	const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+	return (
+		<text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
+			{`${(percent * 100).toFixed(0)}%`}
+		</text>
+	);
+};
+
 export function DataCard(props) {
 	const { template, processedObject, teamsRuns, topKey } = props;
 	const classes = useStyles();
@@ -57,23 +73,38 @@ export function DataCard(props) {
 	// initialize our chart data object
 	let data = [];
 
-	// if the top item in the template has children:
-	if (topItem.children) {
-		// for each run/match the team has done:
-		teamsRuns.forEach(run => {
-			// start a new datapoint with the name `Match <match_number>`
-			let datapoint = { name: 'Match ' + run.match };
-			// for each available child in the processed data:
-			availableChildren.forEach(childKey => {
-				// tally up all occurences in the current match's journal
-				let tally = run.journal.filter(journal => journal.event === childKey).length;
-				// set the tally into the new datapoint
-				datapoint[childKey] = tally;
-			});
+	if (!topItem.singleUse) {
+		// if the top item in the template has children:
+		if (topItem.children) {
+			// for each run/match the team has done:
+			teamsRuns.forEach(run => {
+				// start a new datapoint with the name `Match <match_number>`
+				let datapoint = { name: 'Match ' + run.match };
+				// for each available child in the processed data:
+				availableChildren.forEach(childKey => {
+					// tally up all occurences in the current match's journal
+					let tally = run.journal.filter(journal => journal.event === childKey).length;
+					// set the tally into the new datapoint
+					datapoint[childKey] = tally;
+				});
 
-			// push the final datapoint into our data array
-			data.push(datapoint);
-		});
+				// push the final datapoint into our data array
+				data.push(datapoint);
+			});
+		}
+	} else {
+		if (topItem.type === 'single_item') {
+			Object.keys(processedObject.data[topKey]).forEach(childKey => {
+				// for each child of the top level
+				let datapoint = {
+					name: template.scout.run.filter(r => r.key === topKey)[0].children.filter(c => c.key === childKey)[0].display ?
+					      template.scout.run.filter(r => r.key === topKey)[0].children.filter(c => c.key === childKey)[0].display :
+					      childKey,
+					value: processedObject.data[topKey][childKey].average
+				};
+				data.push(datapoint);
+			});
+		}
 	}
 
 	// the above data processing only occurs once and won't be changed for the cards lifetime,
@@ -86,44 +117,65 @@ export function DataCard(props) {
 				{/* ResponsiveContainer creates a chart that can scale to the full width of the parent container, in this case our card */}
 				<ResponsiveContainer width='100%' height={300}>
 					{/* Create a bar chart, pass it our data, and set some margins */}
-					<BarChart
-					data={data}
-					margin={{
-						top: 20, right: 20, bottom: 20, left: 20,
-					}}
-					>
-						{/* Render a grid onto our chart using dashed lines */}
-						<CartesianGrid strokeDasharray="3 3" />
-						{/* Render an X-axis and use the key `name` from datapoints as the point names */}
-						<XAxis dataKey="name" />
-						<YAxis />
-						{/* Render a tooltip allowing the user to hover over a bar to get exact numbers */}
-						<Tooltip />
-						<Legend />
-						{/*
-							For each of the available child keys in the processed objects:
-							- Render a bar on the chart:
-								- `key` is required by map
-								- `dataKey` is a string specifying which value in the datapoint to use
-								- `name` sets the name of the datapoints/bars
-									If the element has display text use it, otherwise default to the underlying key
-								- `fill` sets the fill color of the bar
-									Set by converting the key to a hex color code
+					{!topItem.singleUse ?
+						<BarChart
+						data={data}
+						margin={{
+							top: 0, right: 20, bottom: 20, left: 20,
+						}}
+						>
+							{/* Render a grid onto our chart using dashed lines */}
+							<CartesianGrid strokeDasharray="3 3" />
+							{/* Render an X-axis and use the key `name` from datapoints as the point names */}
+							<XAxis dataKey="name" />
+							<YAxis />
+							{/* Render a tooltip allowing the user to hover over a bar to get exact numbers */}
+							<Tooltip />
+							<Legend />
+							{/*
+								For each of the available child keys in the processed objects:
+								- Render a bar on the chart:
+									- `key` is required by map
+									- `dataKey` is a string specifying which value in the datapoint to use
+									- `name` sets the name of the datapoints/bars
+										If the element has display text use it, otherwise default to the underlying key
+									- `fill` sets the fill color of the bar
+										Set by converting the key to a hex color code
 
-						*/}
-						{availableChildren.map(childKey => (
-							<Bar
-							key={childKey + '-bar'}
-							dataKey={childKey}
-							name={
-								template.scout.run.filter(r => r.key === topKey)[0].children.filter(c => c.key === childKey)[0].display ?
-								template.scout.run.filter(r => r.key === topKey)[0].children.filter(c => c.key === childKey)[0].display :
-								childKey
-							}
-							fill={'#' + string2color(childKey)}
-							/>
-						))}
-					</BarChart>
+							*/}
+							{availableChildren.map(childKey => (
+								<Bar
+								key={childKey + '-bar'}
+								dataKey={childKey}
+								name={
+									template.scout.run.filter(r => r.key === topKey)[0].children.filter(c => c.key === childKey)[0].display ?
+									template.scout.run.filter(r => r.key === topKey)[0].children.filter(c => c.key === childKey)[0].display :
+									childKey
+								}
+								fill={'#' + string2color(childKey)}
+								/>
+							))}
+						</BarChart>
+					:
+						<PieChart
+						margin={{
+							top: 0, right: 20, bottom: 20, left: 20,
+						}}
+						>
+							<Pie
+							dataKey="value"
+							isAnimationActive={false}
+							data={data}
+							labelLine={false}
+							label={renderCustomizedLabel}
+							>
+								{
+									data.map((entry, index) => <Cell key={`cell-${index}`} fill={'#' + string2color(entry.name)} />)
+								}
+							</Pie>
+							<Legend />
+						</PieChart>
+					}
 				</ResponsiveContainer>
 				<div className={classes.listContainer}>
 					{/*
@@ -151,11 +203,17 @@ export function DataCard(props) {
 									// default to blank to ignore unknown datapoints
 									switch (l2key) {
 										case 'average':
-											return (
-												<ListItem key={l2key}>
-													<ListItemText primary={'Average Cycles: ' + Math.round(processedObject.data[topKey][key][l2key]*100)/100} />
-												</ListItem>
-											)
+											if (!topItem.singleUse) {
+												return (
+													<ListItem key={l2key}>
+														<ListItemText primary={'Average Cycles: ' + Math.round(processedObject.data[topKey][key][l2key]*100)/100} />
+													</ListItem>
+												)
+											} else {
+												return (
+													<React.Fragment />
+												)
+											}
 										case 'average_duration':
 											return (
 												<ListItem key={l2key}>
