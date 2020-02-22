@@ -94,6 +94,8 @@ export function DataCard(props) {
 		}
 	} else {
 		if (topItem.type === 'single_item') {
+			let total = 0;
+
 			Object.keys(processedObject.data[topKey]).forEach(childKey => {
 				// for each child of the top level
 				let datapoint = {
@@ -103,6 +105,12 @@ export function DataCard(props) {
 					value: processedObject.data[topKey][childKey].average
 				};
 				data.push(datapoint);
+				total = total - processedObject.data[topKey][childKey].average;
+			});
+
+			data.push({
+				name: 'None',
+				value: 1 - total
 			});
 		}
 	}
@@ -170,7 +178,7 @@ export function DataCard(props) {
 							label={renderCustomizedLabel}
 							>
 								{
-									data.map((entry, index) => <Cell key={`cell-${index}`} fill={'#' + string2color(entry.name)} />)
+									data.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.name === 'None' ? '#CCCCCC' : '#' + string2color(entry.name)} />)
 								}
 							</Pie>
 							<Legend />
@@ -211,7 +219,7 @@ export function DataCard(props) {
 												)
 											} else {
 												return (
-													<React.Fragment />
+													<React.Fragment key={l2key} />
 												)
 											}
 										case 'average_duration':
