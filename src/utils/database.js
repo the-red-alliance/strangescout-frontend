@@ -104,11 +104,11 @@ export const queryDB = (selectedTable, query) => new Promise((resolve, reject) =
 	// switch through the selected table
 	// compare against readableTables enum defined above
 	switch (selectedTable) {
-		case readableTables.RUNS
-		|| readableTables.PROCESSED_TEAMS
-		|| readableTables.TEAMS
-		|| readableTables.MOTIONWORKS
-		|| readableTables.EVENTS:
+		case readableTables.RUNS:
+		case readableTables.PROCESSED_TEAMS:
+		case readableTables.TEAMS:
+		case readableTables.MOTIONWORKS:
+		case readableTables.EVENTS:
 			// if we've selected a valid table
 			// if a query IS defined
 			if (query) {
@@ -180,11 +180,11 @@ export const mostRecent = (selectedTable) => new Promise((resolve, reject) => {
 	// switch through the selected table
 	// compare against readableTables enum defined above
 	switch (selectedTable) {
-		case readableTables.RUNS
-		|| readableTables.PROCESSED_TEAMS
-		|| readableTables.TEAMS
-		|| readableTables.MOTIONWORKS
-		|| readableTables.EVENTS:
+		case readableTables.RUNS:
+		case readableTables.PROCESSED_TEAMS:
+		case readableTables.TEAMS:
+		case readableTables.MOTIONWORKS:
+		case readableTables.EVENTS:
 			// if we've selected a table that supports the updated field
 			// (currently all readable tables)
 			
@@ -230,7 +230,8 @@ export const addToQueue = (selectedQueue, doc) => new Promise((resolve, reject) 
 	// switch through the selected queue table
 	// compare against queueTables enum defined above
 	switch (selectedQueue) {
-		case queueTables.RUNS || queueTables.TEAMS:
+		case queueTables.RUNS:
+		case queueTables.TEAMS:
 			// if a valid queue
 			// put the document into the queue table
 			db[selectedQueue].put(doc).then(() => {
@@ -264,12 +265,12 @@ export const pushQueue = (selectedQueue, token) => new Promise((resolve, reject)
 	versions.forEach(version => {
 		db.version(version.version).stores(version.stores);
 	});
-
+	
 	// switch through the selected queue table
 	// compare against queueTables enum defined above
 	switch (selectedQueue) {
-		case queueTables.RUNS
-		|| queueTables.TEAMS:
+		case queueTables.RUNS:
+		case queueTables.TEAMS:
 			db[selectedQueue].toArray().then(docs => {
 				if (docs.length === 0) resolve();
 				let count = 0;
@@ -328,11 +329,11 @@ export const fetchUpdates = (selectedTable, token) => new Promise((resolve, reje
 	// switch through the selected table
 	// compare against readableTables enum defined above
 	switch (selectedTable) {
-		case readableTables.RUNS
-		|| readableTables.PROCESSED_TEAMS
-		|| readableTables.TEAMS
-		|| readableTables.MOTIONWORKS
-		|| readableTables.EVENTS:
+		case readableTables.RUNS:
+		case readableTables.PROCESSED_TEAMS:
+		case readableTables.TEAMS:
+		case readableTables.MOTIONWORKS:
+		case readableTables.EVENTS:
 			mostRecent(selectedTable).then(updatedDate => {
 				let url = readableBaseURLs.get(selectedTable);
 				if (updatedDate) url = url + '?updated=' + JSON.stringify(updatedDate);
@@ -392,9 +393,9 @@ export const fetchDeletes = (selectedTable, token) => new Promise((resolve, reje
 	// switch through the selected table
 	// compare against deletableTables enum defined above
 	switch (selectedTable) {
-		case deletableTables.RUNS
-		|| deletableTables.TEAMS
-		|| deletableTables.PROCESSED_TEAMS:
+		case deletableTables.RUNS:
+		case deletableTables.TEAMS:
+		case deletableTables.PROCESSED_TEAMS:
 			get(
 				deletableBaseURLs.get(selectedTable),
 				token,
@@ -458,7 +459,7 @@ export const sync = (token) => new Promise((resolve, reject) => {
 			// increment the queue counter
 			queueCounter = queueCounter + 1;
 			// if this was the last queue and we haven't failed yet
-			if (queueCounter === queueTables.length) {
+			if (queueCounter === Object.keys(queueTables).length) {
 				if (failed) {
 					// error and fail
 					console.error('Failed while syncing queues: ', failed);
@@ -472,7 +473,7 @@ export const sync = (token) => new Promise((resolve, reject) => {
 							// increment the readable counter
 							readableCounter = readableCounter + 1;
 							// if this was the last readable and we haven't failed yet
-							if (readableCounter === readableTables.length) {
+							if (readableCounter === Object.keys(readableTables.length)) {
 								if (failed) {
 									// error and fail
 									console.error('Failed while syncing readables: ', failed);
@@ -484,7 +485,7 @@ export const sync = (token) => new Promise((resolve, reject) => {
 											// on success
 											// increment the deletable counter
 											deletableCounter = deletableCounter + 1;
-											if (deletableCounter === deletableTables.length) {
+											if (deletableCounter === Object.keys(deletableTables).length) {
 												if (failed) {
 													// error and fail
 													console.error('Failed while syncing deletables: ', failed);
@@ -500,7 +501,7 @@ export const sync = (token) => new Promise((resolve, reject) => {
 											// set failed
 											failed = e;
 											// if this was the last deletable
-											if (deletableCounter === deletableTables.length) {
+											if (deletableCounter === Object.keys(deletableTables).length) {
 												// error and fail
 												console.error('Failed while syncing deletables: ', e);
 												reject(e);
@@ -516,7 +517,7 @@ export const sync = (token) => new Promise((resolve, reject) => {
 							// set failed
 							failed = e;
 							// if this was the last readable
-							if (readableCounter === readableTables.length) {
+							if (readableCounter === Object.keys(readableTables).length) {
 								// error and fail
 								console.error('Failed while syncing readables: ', e);
 								reject(e);
@@ -532,7 +533,7 @@ export const sync = (token) => new Promise((resolve, reject) => {
 			// set failed
 			failed = e;
 			// if this was the last queue
-			if (queueCounter === queueTables.length) {
+			if (queueCounter === Object.keys(queueTables).length) {
 				// error and fail
 				console.error('Failed while syncing queues: ', e);
 				reject(e);
