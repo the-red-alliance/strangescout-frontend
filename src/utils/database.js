@@ -1,7 +1,10 @@
 import Dexie from 'dexie';
-import { post, get, put } from './requests';
+import { post, get } from './requests';
 import dateParser from './dateParser';
 
+/**
+ * Dexie versions
+ */
 const versions = [
 	{
 		version: 1,
@@ -22,582 +25,518 @@ const versions = [
 			events: '&_id, key, startDate'
 		},
 	},
+	{
+		version: 3,
+		stores: {
+			runs: '&_id, event, team, match, updated',
+			runQueue: '++localId, event, team, match',
+			processedTeams: '&_id, event, team, matches, updated',
+			teams: '&_id, event, team, updated',
+			teamQueue: '++localId, event, team',
+			events: '&_id, key, startDate, updated',
+			matches: '&_id, match, event, updated',
+			motionworks: '&_id, event, team, match, updated'
+		},
+	},
 ];
 
+// Readable tables enum
+export const readableTables = {
+	RUNS: 'runs',
+	PROCESSED_TEAMS: 'processedTeams',
+	TEAMS: 'teams',
+	EVENTS: 'events',
+//	MOTIONWORKS: 'motionworks'
+};
+// Readable tables fetch URLs
+export const readableBaseURLs = new Map([
+	[ readableTables.RUNS, window.origin + '/api/runs' ],
+	[ readableTables.PROCESSED_TEAMS, window.origin + '/api/processedTeams' ],
+	[ readableTables.TEAMS, window.origin + '/api/teams' ],
+	[ readableTables.EVENTS, window.origin + '/api/events' ],
+	[ readableTables.MOTIONWORKS, window.origin + '/api/motionworks' ]
+]);
+
+// Queues enum
+export const queueTables = {
+	RUNS: 'runQueue',
+	TEAMS: 'teamQueue'
+};
+// Queues push URLs
+export const queueBaseURLs = new Map([
+	[ queueTables.RUNS, window.origin + '/api/runs' ],
+	[ queueTables.TEAMS, window.origin + '/api/teams' ]
+]);
+
+// enum for tables which can have docs deleted
+export const deletableTables = {
+	RUNS: 'runs',
+	PROCESSED_TEAMS: 'processedTeams',
+	TEAMS: 'teams'
+};
+// deletable tables IDs URLs
+export const deletableBaseURLs = new Map([
+	[ deletableTables.RUNS, window.origin + '/api/runs/ids' ],
+	[ deletableTables.PROCESSED_TEAMS, window.origin + '/api/processedTeams/ids' ],
+	[ deletableTables.TEAMS, window.origin + '/api/teams/ids' ]
+]);
+
+/**
+ * Clear the stored database
+ */
 export function clearData() {
 	const db = new Dexie('strangescout');
 	db.delete();
 };
 
-export function readEvents() {
-	return new Promise((resolve, reject) => {
-		const db = new Dexie('strangescout');
-		versions.forEach(version => {
-			db.version(version.version).stores(version.stores);
-		});
-
-		db.events.toArray().then(docs => {
-			resolve(docs);
-		}, e => {
-			console.error('error reading events from local db: ', e);
-			reject(e);
-		});
+/**
+ * Resolve an array of documents from the selected table matching an optional query
+ * @param {string} selectedTable A string identifier of the table to query
+ * @param {{}} query A Dexie `where()` query object
+ */
+export const queryDB = (selectedTable, query) => new Promise((resolve, reject) => {
+	// load databases
+	const db = new Dexie('strangescout');
+	versions.forEach(version => {
+		db.version(version.version).stores(version.stores);
 	});
-};
 
-export function readRuns(event, team) {
-	return new Promise((resolve, reject) => {
-		const db = new Dexie('strangescout');
-		versions.forEach(version => {
-			db.version(version.version).stores(version.stores);
-		});
-
-		db.runs.toArray().then(docs => {
-			let finalDocs = docs;
-			
-			if (team) {
-				finalDocs = finalDocs.filter(doc => doc.team === team);
-			}
-			if (event) {
-				finalDocs = finalDocs.filter(doc => doc.event === event);
-			}
-
-			resolve(finalDocs);
-		}, e => {
-			console.error('error reading runs from local db: ', e);
-			reject(e);
-		});
-	});
-};
-
-export function readTeams(event, team) {
-	return new Promise((resolve, reject) => {
-		const db = new Dexie('strangescout');
-		versions.forEach(version => {
-			db.version(version.version).stores(version.stores);
-		});
-
-		db.teams.toArray().then(docs => {
-			let finalDocs = docs;
-			
-			if (team) {
-				finalDocs = finalDocs.filter(doc => doc.team === team);
-			}
-			if (event) {
-				finalDocs = finalDocs.filter(doc => doc.event === event);
-			}
-
-			resolve(finalDocs);
-		}, e => {
-			console.error('error reading pits from local db: ', e);
-			reject(e);
-		});
-	});
-};
-
-export function readProcessedTeams() {
-	return new Promise((resolve, reject) => {
-		const db = new Dexie('strangescout');
-		versions.forEach(version => {
-			db.version(version.version).stores(version.stores);
-		});
-
-		db.processedTeams.toArray().then(docs => {
-			resolve(docs);
-		}, e => {
-			console.error('error reading processedTeams from local db: ', e);
-			reject(e);
-		});
-	});
-};
-
-export function mostRecentRun() {
-	return new Promise((resolve, reject) => {
-		const db = new Dexie('strangescout');
-		versions.forEach(version => {
-			db.version(version.version).stores(version.stores);
-		});
-
-		db.runs.orderBy('updated').last().then(object => {
-			if (object) {
-				console.log('last updated: ', object.updated);
-				resolve(object.updated);
-			} else {
-				console.log('could not find last updated');
-				resolve();
-			}
-		}, (e) => {
-			console.error('error finding last modified', e);
-			reject();
-		});
-	});
-};
-
-export function fetchNewRuns(token) {
-	return new Promise((resolve, reject) => {
-		const db = new Dexie('strangescout');
-		versions.forEach(version => {
-			db.version(version.version).stores(version.stores);
-		});
-
-		mostRecentRun().then((lastUpdated) => {
-			const url = lastUpdated ? window.origin + '/api/runs?updated=' + JSON.stringify(lastUpdated) : '/api/runs';
-			get(
-				url,
-				token,
-				[{name: 'Content-type', value: 'application/json'}]
-			).then((result) => {
-				if (result.status === 200) {
-					let docs;
-					try {
-						docs = JSON.parse(result.response, dateParser);
-
-						try {
-							db.runs.bulkPut(docs);
-							resolve();
-						} catch (e) {
-							console.error('failed to save docs', e);
-							reject('failed to save');
+	// switch through the selected table
+	// compare against readableTables enum defined above
+	switch (selectedTable) {
+		case readableTables.RUNS
+		|| readableTables.PROCESSED_TEAMS
+		|| readableTables.TEAMS
+		|| readableTables.MOTIONWORKS
+		|| readableTables.EVENTS:
+			// if we've selected a valid table
+			// if a query IS defined
+			if (query) {
+				// Query validation
+				// checks to make sure all keys in the query exist somewhere in the database definition
+				// for each key specified in the query
+				Object.keys(query).forEach(key => {
+					// set the key available check to false by default
+					// gets set to true if the query key exists somewhere in the database versions
+					let keyAvailable = false;
+					// for each version in the database
+					versions.forEach((version, i) => {
+						// replace whitespace in the key definition string for the selected table in the selected event,
+						// then split that no-whitespace string at the commas to separate the keys,
+						// then check if the query key is in the versions table definition
+						// if the key is available, set the keyAvailable check to true
+						if (version.stores[selectedTable].replace(/\s/g, "").split(',').includes(key)) keyAvailable = true;
+						// if we're on the last version, then if the key hasn't been found in any database version
+						if (i === versions.length - 1 && !keyAvailable) {
+							// log an error and reject the promise
+							console.error('Invalid query: ', query, '\nOn table: ' + selectedTable);
+							reject('invalid query');
+							return;
 						}
-					} catch (e) {
-						console.error('failed to parse docs', e);
-						reject('failed to parse');
-					}
-				} else {
-					console.error('failed to get runs from server', result);
-					reject('failed to fetch');
-				}
-			});
-		}, () => {
-			console.error('error finding last modified');
-			reject('couldn\'t find last modified');
-		});
-	});
-};
-
-export function fetchRemovedRuns(token) {
-	return new Promise((resolve, reject) => {
-		const db = new Dexie('strangescout');
-		versions.forEach(version => {
-			db.version(version.version).stores(version.stores);
-		});
-
-		get(
-			'/api/runs/ids',
-			token,
-			[{name: 'Content-type', value: 'application/json'}]
-		).then((result) => {
-			if (result.status === 200) {
-				let idList;
-				try {
-					// parse in list of remaining IDs
-					idList = JSON.parse(result.response);
-
-					// get current primary keys
-					// (returns primary keys of all docs where team > 0, aka. all docs)
-					// in theory going table -> collection -> keys will be faster than going table -> array -> keys
-					db.runs.where('team').above(0).primaryKeys().then(keys => {
-				//	db.runs.toArray().then(runs => {
-					//	let keys = runs.map(item => item._id);
-						// do we have any keys locally that aren't in the master db?
-						let deletedkeys = keys.filter(n => !idList.includes(n));
-
-						// delete if so
-						try {
-							db.runs.bulkDelete(deletedkeys);
-							resolve();
-						} catch (e) {
-							console.error('failed to delete docs', e);
-							reject('failed to delete');
-						}
-					}, (e2) => {
-						console.error('failed to get keys', e2);
-						reject('failed to get keys');
 					});
-				} catch (e) {
-					console.error('failed to parse ids', e);
-					reject('failed to parse ids');
-				}
-			} else {
-				reject('failed to fetch deleted ids');
-			}
-		});
-	});
-};
-
-export function storeLocalRun(run) {
-	return new Promise((resolve, reject) => {
-		const db = new Dexie('strangescout');
-		versions.forEach(version => {
-			db.version(version.version).stores(version.stores);
-		});
-
-		db.runQueue.put(run).then(() => {
-			resolve();
-		}, (e) => {
-			console.error('failed to store local run', e);
-			reject('failed to store run');
-		});
-	});
-};
-
-export function pushLocalRuns(token) {
-	return new Promise((resolve, reject) => {
-		const db = new Dexie('strangescout');
-		versions.forEach(version => {
-			db.version(version.version).stores(version.stores);
-		});
-
-		db.runQueue.toArray().then(runs => {
-			if (runs.length === 0) resolve();
-			let count = 0;
-			runs.forEach(run => {
-				post(
-					window.origin + '/api/runs',
-					JSON.stringify(run),
-					token,
-					[{name: 'Content-type', value: 'application/json'}]
-				).then(result => {
-					if (result.status === 202) {
-						db.runQueue.delete(run.localId).then(() => {
-							count = count + 1;
-							if (count === runs.length) {
-								resolve();
-							};
-						}, e => {
-							console.error('failed to delete local run', e);
-							reject('failed to delete local run');
-						});
-					} else {
-						console.error('failed to POST local run', result);
-						reject('failed to push runs');
-					}
-				}, e => {
-					console.error('failed to POST local run', e);
-					reject('failed to push runs');
 				});
-			});
-		}, (e) => {
-			console.error('failed to read local runs', e);
-			reject('failed to read runs');
-		});
-	});
-};
-
-export function mostRecentProcessedTeam() {
-	return new Promise((resolve, reject) => {
-		const db = new Dexie('strangescout');
-		versions.forEach(version => {
-			db.version(version.version).stores(version.stores);
-		});
-
-		db.processedTeams.orderBy('updated').last().then(object => {
-			if (object) {
-				console.log('last updated: ', object.updated);
-				resolve(object.updated);
+				
+				// find docs matching the given query in the selected table
+				db[selectedTable].where(query).toArray().then(docs => {
+					// resolve the docs
+					resolve(docs);
+				}, e => {
+					// error and reject on a query error
+					console.error('error reading from: ' + selectedTable + '\nQuery: ', query, e);
+					reject(e);
+				});
 			} else {
-				console.log('could not find last updated processed team');
-				resolve();
+				// else if there's no query, find all docs in the selected table
+				db[selectedTable].toArray().then(docs => {
+					// resolve the docs
+					resolve(docs);
+				}, e => {
+					// error and reject
+					console.error('error reading from: ' + selectedTable, e);
+					reject(e);
+				});
 			}
-		}, (e) => {
-			console.error('error finding last modified processed team', e);
-			reject();
-		});
+			break;
+		default:
+			// default to fail if we haven't selected an available table
+			console.error(selectedTable, 'is not a valid readable table!\nValid tables: ', readableTables);
+			reject('not a valid table');
+	}
+
+	return;
+});
+
+/**
+ * Resolve the updated date of the most recently updated doc in a table
+ * @param {string} selectedTable A string identifier of the table to query
+ */
+export const mostRecent = (selectedTable) => new Promise((resolve, reject) => {
+	// load databases
+	const db = new Dexie('strangescout');
+	versions.forEach(version => {
+		db.version(version.version).stores(version.stores);
 	});
-};
 
-export function fetchNewProcessedTeams(token) {
-	return new Promise((resolve, reject) => {
-		const db = new Dexie('strangescout');
-		versions.forEach(version => {
-			db.version(version.version).stores(version.stores);
-		});
-
-		mostRecentProcessedTeam().then((lastUpdated) => {
-			const url = lastUpdated ? window.origin + '/api/processedTeams?updated=' + JSON.stringify(lastUpdated) : '/api/processedTeams';
-			get(
-				url,
-				token,
-				[{name: 'Content-type', value: 'application/json'}]
-			).then((result) => {
-				if (result.status === 200) {
-					let docs;
-					try {
-						docs = JSON.parse(result.response, dateParser);
-
-						try {
-							db.processedTeams.bulkPut(docs);
-							resolve();
-						} catch (e) {
-							console.error('failed to save processed docs', e);
-							reject('failed to save processed');
-						}
-					} catch (e) {
-						console.error('failed to parse processed docs', e);
-						reject('failed to parse processed');
-					}
+	// switch through the selected table
+	// compare against readableTables enum defined above
+	switch (selectedTable) {
+		case readableTables.RUNS
+		|| readableTables.PROCESSED_TEAMS
+		|| readableTables.TEAMS
+		|| readableTables.MOTIONWORKS
+		|| readableTables.EVENTS:
+			// if we've selected a table that supports the updated field
+			// (currently all readable tables)
+			
+			// order the table by the updated key, then select the last doc
+			db[selectedTable].orderBy('updated').last().then(object => {
+				// if a doc was found
+				if (object) {
+					// log and resolve a date
+					console.log('last updated in ' + selectedTable + ': ', object.updated);
+					resolve(object.updated);
 				} else {
-					console.error('failed to get processed teams from server', result);
-					reject('failed to fetch');
+					// else succeed but don't return a date
+					console.log('could not find last updated');
+					resolve();
 				}
+			}, (e) => {
+				// on a database error, log and reject
+				console.error('error finding last modified in ' + selectedTable, e);
+				reject();
 			});
-		}, () => {
-			console.error('error finding last modified processed');
-			reject('couldn\'t find last modified processed');
-		});
+			break;
+		default:
+			// default to fail if we haven't selected an available table
+			console.error(selectedTable, 'is not a valid readable table!\nValid tables: ', readableTables);
+			reject('not a valid table');
+	}
+
+	return;
+});
+
+/**
+ * Add a doc to a queue
+ * @param {string} selectedQueue A string identifier of the queue to push to
+ * @param {{}} doc The document to push to the queue
+ */
+export const addToQueue = (selectedQueue, doc) => new Promise((resolve, reject) => {
+	// load database versions
+	const db = new Dexie('strangescout');
+	versions.forEach(version => {
+		db.version(version.version).stores(version.stores);
 	});
-};
 
-export function fetchRemovedProcessedTeams(token) {
-	return new Promise((resolve, reject) => {
-		const db = new Dexie('strangescout');
-		versions.forEach(version => {
-			db.version(version.version).stores(version.stores);
-		});
+	// switch through the selected queue table
+	// compare against queueTables enum defined above
+	switch (selectedQueue) {
+		case queueTables.RUNS || queueTables.TEAMS:
+			// if a valid queue
+			// put the document into the queue table
+			db[selectedQueue].put(doc).then(() => {
+				// then resolve
+				resolve();
+			}, (e) => {
+				// fail on a write error
+				console.error('failed to store doc to queue\nQueue: ' + selectedQueue, 'Doc: ', doc, e);
+				reject('failed to store doc');
+			});
+			break;
+		default:
+			// fail if not a valid queue
+			console.error(selectedQueue, 'is not a valid queue table!\nValid queues: ', queueTables);
+			reject('not a valid queue');
+	}
 
-		get(
-			'/api/processedTeams/ids',
-			token,
-			[{name: 'Content-type', value: 'application/json'}]
-		).then((result) => {
-			if (result.status === 200) {
-				let idList;
-				try {
-					// parse in list of remaining IDs
-					idList = JSON.parse(result.response);
+	return;
+});
 
-					// get current primary keys
-					// (returns primary keys of all docs where team > 0, aka. all docs)
-					// in theory going table -> collection -> keys will be faster than going table -> array -> keys
-					db.processedTeams.where('team').above(0).primaryKeys().then(keys => {
-				//	db.runs.toArray().then(runs => {
-					//	let keys = runs.map(item => item._id);
-						// do we have any keys locally that aren't in the master db?
-						let deletedkeys = keys.filter(n => !idList.includes(n));
+/**
+ * Push a specified queue to the server
+ * 
+ * (POSTs each doc to an endpoint associated with the queue)
+ * @param {string} selectedQueue A string identifier of the queue to push
+ * @param {string} token The user's JWT token
+ */
+export const pushQueue = (selectedQueue, token) => new Promise((resolve, reject) => {
+	// load database versions
+	const db = new Dexie('strangescout');
+	versions.forEach(version => {
+		db.version(version.version).stores(version.stores);
+	});
 
-						// delete if so
-						try {
-							db.processedTeams.bulkDelete(deletedkeys);
-							resolve();
-						} catch (e) {
-							console.error('failed to delete processed docs', e);
-							reject('failed to delete processed');
+	// switch through the selected queue table
+	// compare against queueTables enum defined above
+	switch (selectedQueue) {
+		case queueTables.RUNS
+		|| queueTables.TEAMS:
+			db[selectedQueue].toArray().then(docs => {
+				if (docs.length === 0) resolve();
+				let count = 0;
+				docs.forEach(doc => {
+					post(
+						queueBaseURLs.get(selectedQueue),
+						JSON.stringify(doc),
+						token,
+						[{name: 'Content-type', value: 'application/json'}]
+					).then(result => {
+						if (199 < result.status < 300) {
+							db[selectedQueue].delete(doc.localId).then(() => {
+								count = count + 1;
+								if (count === docs.length) {
+									resolve();
+								};
+							}, e => {
+								console.error('failed to delete queue doc', e);
+								reject('failed to delete queue doc');
+							});
+						} else {
+							console.error('failed to POST queue doc', result);
+							reject('failed to push queue');
 						}
-					}, (e2) => {
-						console.error('failed to get processed keys', e2);
-						reject('failed to get keys processed');
+					}, e => {
+						console.error('failed to POST queue doc', e);
+						reject('failed to push queue');
 					});
-				} catch (e) {
-					console.error('failed to parse processed ids', e);
-					reject('failed to parse ids processed');
-				}
-			} else {
-				reject('failed to fetch deleted ids processed');
-			}
-		});
-	});
-};
-
-export function mostRecentTeam() {
-	return new Promise((resolve, reject) => {
-		const db = new Dexie('strangescout');
-		versions.forEach(version => {
-			db.version(version.version).stores(version.stores);
-		});
-
-		db.teams.orderBy('updated').last().then(object => {
-			if (object) {
-				console.log('last updated: ', object.updated);
-				resolve(object.updated);
-			} else {
-				console.log('could not find last updated');
-				resolve();
-			}
-		}, (e) => {
-			console.error('error finding last modified', e);
-			reject();
-		});
-	});
-};
-
-export function fetchNewTeams(token) {
-	return new Promise((resolve, reject) => {
-		const db = new Dexie('strangescout');
-		versions.forEach(version => {
-			db.version(version.version).stores(version.stores);
-		});
-
-		mostRecentTeam().then((lastUpdated) => {
-			const url = lastUpdated ? window.origin + '/api/teams?updated=' + JSON.stringify(lastUpdated) : '/api/teams';
-			get(
-				url,
-				token,
-				[{name: 'Content-type', value: 'application/json'}]
-			).then((result) => {
-				if (result.status === 200) {
-					let docs;
-					try {
-						docs = JSON.parse(result.response, dateParser);
-
-						try {
-							db.teams.bulkPut(docs);
-							resolve();
-						} catch (e) {
-							console.error('failed to save docs', e);
-							reject('failed to save');
-						}
-					} catch (e) {
-						console.error('failed to parse docs', e);
-						reject('failed to parse');
-					}
-				} else {
-					console.error('failed to get teams from server', result);
-					reject('failed to fetch');
-				}
+				});
+			}, e => {
+				console.error('failed to read queue ' + selectedQueue, e);
+				reject('failed to read queue ' + selectedQueue);
 			});
-		}, () => {
-			console.error('error finding last modified');
-			reject('couldn\'t find last modified');
-		});
+			break;
+		default:
+			// fail if not a valid queue
+			console.error(selectedQueue, 'is not a valid queue table!\nValid queues: ', queueTables);
+			reject('not a valid queue');
+	}
+
+	return;
+});
+
+/**
+ * Check the API for new documents for a table
+ * @param {string} selectedTable A string identifier of the table to check for new documents
+ * @param {string} token The user's JWT token
+ */
+export const fetchUpdates = (selectedTable, token) => new Promise((resolve, reject) => {
+	// load database versions
+	const db = new Dexie('strangescout');
+	versions.forEach(version => {
+		db.version(version.version).stores(version.stores);
 	});
-};
 
-export function storeLocalTeam(team) {
-	return new Promise((resolve, reject) => {
-		const db = new Dexie('strangescout');
-		versions.forEach(version => {
-			db.version(version.version).stores(version.stores);
-		});
+	// switch through the selected table
+	// compare against readableTables enum defined above
+	switch (selectedTable) {
+		case readableTables.RUNS
+		|| readableTables.PROCESSED_TEAMS
+		|| readableTables.TEAMS
+		|| readableTables.MOTIONWORKS
+		|| readableTables.EVENTS:
+			mostRecent(selectedTable).then(updatedDate => {
+				let url = readableBaseURLs.get(selectedTable);
+				if (updatedDate) url = url + '?updated=' + JSON.stringify(updatedDate);
 
-		db.teamQueue.put(team).then(() => {
-			resolve();
-		}, (e) => {
-			console.error('failed to store local team', e);
-			reject('failed to store team');
-		});
-	});
-};
-
-export function pushLocalTeams(token) {
-	return new Promise((resolve, reject) => {
-		const db = new Dexie('strangescout');
-		versions.forEach(version => {
-			db.version(version.version).stores(version.stores);
-		});
-
-		db.teamQueue.toArray().then(teams => {
-			if (teams.length === 0) resolve();
-			let count = 0;
-			teams.forEach(team => {
-				put(
-					window.origin + '/api/teams/' + team.team,
-					JSON.stringify(team),
+				get(
+					url,
 					token,
 					[{name: 'Content-type', value: 'application/json'}]
 				).then(result => {
 					if (result.status === 200) {
-						db.teamQueue.delete(team.localId).then(() => {
-							count = count + 1;
-							if (count === teams.length) {
+						let docs;
+						try {
+							docs = JSON.parse(result.response, dateParser);
+	
+							try {
+								db[selectedTable].bulkPut(docs);
 								resolve();
-							};
-						}, e => {
-							console.error('failed to delete local team', e);
-							reject('failed to delete local team');
-						});
+							} catch (e) {
+								console.error('failed to save docs to ' + selectedTable, e);
+								reject('failed to save');
+							}
+						} catch (e) {
+							console.error('failed to parse docs for ' + selectedTable, e);
+							reject('failed to parse');
+						}
 					} else {
-						console.error('failed to POST local team', result);
-						reject('failed to push teams');
+						console.error('failed to GET from server', result);
+						reject('failed to fetch');
 					}
-				}, e => {
-					console.error('failed to POST local team', e);
-					reject('failed to push teams');
 				});
+			}, e => {
+				console.error('Error finding most recent doc in table ' + selectedTable, e);
+				reject(e);
 			});
-		}, (e) => {
-			console.error('failed to read local teams', e);
-			reject('failed to read teams');
-		});
+			break;
+		default:
+			// default to fail if we haven't selected an available table
+			console.error(selectedTable, ' is not a valid fetchable table!\nValid tables: ', readableTables);
+			reject('not a valid table');
+	}
+
+	return;
+});
+
+/**
+ * Check the API for the IDs of all existing documents and remove any local docs not available remotely
+ * @param {string} selectedTable A string identifier of the table to check for deleted documents
+ * @param {string} token The user's JWT token
+ */
+export const fetchDeletes = (selectedTable, token) => new Promise((resolve, reject) => {
+	// load database versions
+	const db = new Dexie('strangescout');
+	versions.forEach(version => {
+		db.version(version.version).stores(version.stores);
 	});
-};
 
-export function fetchEvents(token) {
-	return new Promise((resolve, reject) => {
-		const db = new Dexie('strangescout');
-		versions.forEach(version => {
-			db.version(version.version).stores(version.stores);
-		});
-
-		const url = window.origin + '/api/events';
-		get(
-			url,
-			token,
-			[{name: 'Content-type', value: 'application/json'}]
-		).then((result) => {
-			if (result.status === 200) {
-				let docs;
-				try {
-					docs = JSON.parse(result.response, dateParser);
-
+	// switch through the selected table
+	// compare against deletableTables enum defined above
+	switch (selectedTable) {
+		case deletableTables.RUNS
+		|| deletableTables.TEAMS
+		|| deletableTables.PROCESSED_TEAMS:
+			get(
+				deletableBaseURLs.get(selectedTable),
+				token,
+				[{name: 'Content-type', value: 'application/json'}]
+			).then(result => {
+				if (result.status === 200) {
+					let idList;
 					try {
-						db.events.bulkPut(docs);
-						resolve();
+						// parse in list of remaining IDs
+						idList = JSON.parse(result.response);
+						// get current primary keys
+						db[selectedTable].toCollection().primaryKeys().then(keys => {
+							// do we have any keys locally that aren't in the master db?
+							let deletedKeys = keys.filter(n => !idList.includes(n));
+							// delete if so
+							try {
+								db[selectedTable].bulkDelete(deletedKeys);
+								resolve();
+							} catch (e) {
+								console.error('failed to delete docs for ' + selectedTable, e);
+								reject('failed to delete docs for ' + selectedTable);
+							}
+						}, e2 => {
+							console.error('failed to get keys for ' + selectedTable, e2);
+							reject('failed to get keys for ' + selectedTable);
+						});
 					} catch (e) {
-						console.error('failed to save docs', e);
-						reject('failed to save');
+						console.error('failed to parse ids for ' + selectedTable, e);
+						reject('failed to parse ids for ' + selectedTable);
 					}
-				} catch (e) {
-					console.error('failed to parse docs', e);
-					reject('failed to parse');
+				} else {
+					reject('failed to fetch deleted ids for ' + selectedTable);
 				}
-			} else {
-				console.error('failed to get events from server', result);
-				reject('failed to fetch');
+			});
+			break;
+		default:
+			// fail if not a deletable table
+			console.error(selectedTable, 'is not a valid deletable table!\nValid tables: ', deletableTables);
+			reject('not a valid table');
+	}
+
+	return;
+});
+
+/**
+ * Push all queues, fetch all readables, update all deletes
+ * @param {string} token The user's JWT token
+ */
+export const sync = (token) => new Promise((resolve, reject) => {
+	let failed = null;
+	let queueCounter = 0;
+	let readableCounter = 0;
+	let deletableCounter = 0;
+
+	// for each queue
+	Object.keys(queueTables).forEach(queueKey => {
+		const queue = queueTables[queueKey];
+		// push the queue
+		pushQueue(queue, token).then(() => {
+			// on success
+			// increment the queue counter
+			queueCounter = queueCounter + 1;
+			// if this was the last queue and we haven't failed yet
+			if (queueCounter === queueTables.length) {
+				if (failed) {
+					// error and fail
+					console.error('Failed while syncing queues: ', failed);
+					reject(failed);
+				} else {
+					// for each readable table
+					Object.keys(readableTables).forEach(readableKey => {
+						const readable = readableTables[readableKey];
+						fetchUpdates(readable, token).then(() => {
+							// on success
+							// increment the readable counter
+							readableCounter = readableCounter + 1;
+							// if this was the last readable and we haven't failed yet
+							if (readableCounter === readableTables.length) {
+								if (failed) {
+									// error and fail
+									console.error('Failed while syncing readables: ', failed);
+									reject(failed);
+								} else {
+									Object.keys(deletableTables).forEach(deletableKey => {
+										const deletable = deletableTables[deletableKey];
+										fetchDeletes(deletable, token).then(() => {
+											// on success
+											// increment the deletable counter
+											deletableCounter = deletableCounter + 1;
+											if (deletableCounter === deletableTables.length) {
+												if (failed) {
+													// error and fail
+													console.error('Failed while syncing deletables: ', failed);
+													reject(failed);
+												} else {
+													resolve();
+												}
+											}
+										}, e => {
+											// on failure
+											// increment the deletable counter
+											deletableCounter = deletableCounter + 1;
+											// set failed
+											failed = e;
+											// if this was the last deletable
+											if (deletableCounter === deletableTables.length) {
+												// error and fail
+												console.error('Failed while syncing deletables: ', e);
+												reject(e);
+											}
+										});
+									});
+								}
+							}
+						}, e => {
+							// on failure
+							// increment the readable counter
+							readableCounter = readableCounter + 1;
+							// set failed
+							failed = e;
+							// if this was the last readable
+							if (readableCounter === readableTables.length) {
+								// error and fail
+								console.error('Failed while syncing readables: ', e);
+								reject(e);
+							}
+						});
+					});
+				}
+			}
+		}, e => {
+			// on failure
+			// increment the queue counter
+			queueCounter = queueCounter + 1;
+			// set failed
+			failed = e;
+			// if this was the last queue
+			if (queueCounter === queueTables.length) {
+				// error and fail
+				console.error('Failed while syncing queues: ', e);
+				reject(e);
 			}
 		});
 	});
-};
-
-export function syncData(token) {
-	return new Promise((resolve, reject) => {
-		pushLocalRuns(token).then(() => {
-			fetchNewRuns(token).then(() => {
-				fetchRemovedRuns(token).then(() => {
-
-					fetchNewProcessedTeams(token).then(() => {
-						fetchRemovedProcessedTeams(token).then(() => {
-
-							pushLocalTeams(token).then(() => {
-								fetchNewTeams(token).then(() => {
-
-									fetchEvents(token).then(() => {
-										resolve();
-									}, fetchEventsError => {
-										reject(fetchEventsError);
-									});
-
-								}, fetchTeamsError => {
-									reject(fetchTeamsError);
-								});
-							}, pushTeamsError => {
-								reject(pushTeamsError);
-							});
-
-						}, fetchRemovedProcessedError => {
-							reject(fetchRemovedProcessedError);
-						});
-					}, fetchProcessedError => {
-						reject(fetchProcessedError);
-					});
-
-				}, fetchRemovedError => {
-					reject(fetchRemovedError);
-				});
-			}, fetchError => {
-				reject(fetchError);
-			});
-		}, pushError => {
-			reject(pushError);
-		});
-	});
-};
+});

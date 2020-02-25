@@ -6,7 +6,7 @@ import { makeStyles } from '@material-ui/core/styles';
 
 import { DataContent } from './Data-content.jsx';
 
-import { readProcessedTeams, readRuns, storeLocalTeam, syncData, readTeams } from '../../../utils/database';
+import { sync, addToQueue, queueTables, queryDB, readableTables } from '../../../utils/database';
 import { sendNotification } from '../../../store/notifications/actions';
 
 const useStyles = makeStyles(theme => ({
@@ -49,11 +49,11 @@ function DataContainer(props) {
 
 	if (!dbRead) {
 		if (process.env.NODE_ENV === 'production') {
-			readProcessedTeams().then(docs => {
+			queryDB(readableTables.PROCESSED_TEAMS).then(docs => {
 				setProcessed(docs);
-				readRuns().then(newRuns => {
+				queryDB(readableTables.RUNS).then(newRuns => {
 					setRuns(newRuns);
-					readTeams().then(newTeams => {
+					queryDB(readableTables.TEAMS).then(newTeams => {
 						setPits(newTeams);
 						setDbRead(true);
 					});
@@ -85,10 +85,10 @@ function DataContainer(props) {
 
 	const updatePit = (event, team, data) => {
 		// store the team doc to local db
-		storeLocalTeam({team: team, event: event, data: data}).then(() => {
+		addToQueue(queueTables.TEAMS, {team: team, event: event, data: data}).then(() => {
 			// on successful store
 			// async sync data with the server
-			syncData(user.session.token).then(() => {
+			sync(user.session.token).then(() => {
 				// notification on success
 				props.dispatch(sendNotification({
 					variant: 'success',

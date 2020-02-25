@@ -4,7 +4,6 @@
 const events = [];
 const dummyData = [
 	{
-		matches: [],
 		_id: '5e38c864d9153a0007ef50c6',
 		city: 'Pembroke',
 		country: 'USA',
@@ -28,7 +27,6 @@ const dummyData = [
 		__v: 0
 	},
 	{
-		matches: [],
 		_id: '5e38c864d9153a0007ef50c7',
 		city: 'Gibsonville',
 		country: 'USA',

@@ -5,9 +5,10 @@ import { verifyLogin } from '../../../store/user/actions';
 import { loadTemplate, deleteTemplate } from '../../../store/template/actions';
 import { setEvents } from '../../../store/events/actions';
 
-import { syncData, clearData } from '../../../utils/database';
-// import events reader
-import { readEvents } from '../../../utils/database';
+import { sync, clearData } from '../../../utils/database';
+// import database query fn
+import { queryDB } from '../../../utils/database';
+import { readableTables } from '../../../utils/database';
 
 const mapStateToProps = (state) => {
 	return {};
@@ -22,8 +23,8 @@ export function Loader(props) {
 			// attempt to verify it
 			props.dispatch(verifyLogin(session.token, session, (success, newSession) => {
 				if (success && newSession) props.dispatch(loadTemplate(newSession.token));
-				if (success && newSession) syncData(newSession.token).then(null, (e) => console.error('error syncing data: ', e));
-				readEvents().then(events => {
+				if (success && newSession) sync(newSession.token).then(null, (e) => console.error('error syncing data: ', e));
+				queryDB(readableTables.EVENTS).then(events => {
 					props.dispatch(setEvents(events));
 					props.afterLoad();
 				}, e => {
@@ -38,12 +39,6 @@ export function Loader(props) {
 				// clear stored data
 				clearData();
 				props.dispatch(deleteTemplate());
-			// else if testing
-			} else {
-				// load events
-				readEvents().then(() => {}, e => {
-					console.error('error loading events from local db: ', e);
-				});
 			}
 			// finish loader
 			props.afterLoad();

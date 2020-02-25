@@ -5,7 +5,7 @@ import { Redirect } from 'react-router-dom';
 // import content
 import { Home } from './Home-content.jsx';
 
-import { syncData } from '../../../utils/database';
+import { sync } from '../../../utils/database';
 import { sendNotification } from '../../../store/notifications/actions';
 
 // map store to prop
@@ -23,7 +23,7 @@ function HomeContainer(props) {
 	// function for the sync button
 	const syncAction = () => {
 		// execute the data sync promise, passing in the session token
-		syncData(props.user.session.token).then(() => {
+		sync(props.user.session.token).then(() => {
 			// on success dispatch a success notification
 			props.dispatch(sendNotification({
 				variant: 'success',

@@ -8,7 +8,7 @@ import { SignUp } from './SignUp-content.jsx';
 
 import { createUser } from '../../../store/user/actions';
 import { loadTemplate } from '../../../store/template/actions';
-import { syncData, readEvents } from '../../../utils/database';
+import { sync, queryDB, readableTables } from '../../../utils/database';
 
 import { setEvents } from '../../../store/events/actions';
 
@@ -31,8 +31,8 @@ function SignUpContainer(props) {
 		if (success) {
 			history.push('/');
 			props.dispatch(loadTemplate(newSession.token));
-			syncData(newSession.token).then(() => {
-				readEvents().then(events => {
+			sync(newSession.token).then(() => {
+				queryDB(readableTables.EVENTS).then(events => {
 					props.dispatch(setEvents(events));
 				}, e => {
 					console.error('error loading events from local db: ', e);

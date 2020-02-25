@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Redirect, useHistory } from 'react-router-dom';
 
 import { sendNotification } from '../../../store/notifications/actions';
-import { storeLocalRun, syncData } from '../../../utils/database';
+import { sync, addToQueue, queueTables } from '../../../utils/database';
 
 import { Run } from './Run-content.jsx';
 import { SetupDialog } from './Run-SetupDialog.jsx';
@@ -77,12 +77,12 @@ export function RunContainer(props) {
 	// submit the match
 	const onSubmit = () => {
 		// async store to the run queue
-		storeLocalRun(runState).then(() => {
+		addToQueue(queueTables.RUNS, runState).then(() => {
 			// on success redirect to /
 			history.push('/');
 
 			// async sync data with the server
-			syncData(user.session.token).then(() => {
+			sync(user.session.token).then(() => {
 				// notification on success
 				props.dispatch(sendNotification({
 					variant: 'success',
