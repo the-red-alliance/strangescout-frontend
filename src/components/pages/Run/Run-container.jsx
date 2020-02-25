@@ -3,23 +3,27 @@ import { connect } from 'react-redux';
 import { Redirect, useHistory } from 'react-router-dom';
 
 import { sendNotification } from '../../../store/notifications/actions';
-import { sync, addToQueue, queueTables } from '../../../utils/database';
+import { sync, queryDB, readableTables, addToQueue, queueTables } from '../../../utils/database';
 
 import { Run } from './Run-content.jsx';
 import { SetupDialog } from './Run-SetupDialog.jsx';
 import { FinalizeDialog } from './Run-FinalizeDialog.jsx';
+
+import NoEvents from '../../NoEvents.jsx';
 
 // we need the user and game template from the store
 function mapStateToProps(state) {
 	return {
 		user: state.user,
 		template: state.template,
-		events: state.events,
 	};
 };
 
 export function RunContainer(props) {
-	const { template, user, events } = props;
+	const { template, user } = props;
+
+	const [ loaded, setLoaded ] = useState(false);
+	const [ events, setEvents ] = useState([]);
 	// state for mtch status
 	// has the match started yet
 	// is the match completed
@@ -57,6 +61,16 @@ export function RunContainer(props) {
 
 	// redirect to the login page if the user isn't logged in
 	if (process.env.NODE_ENV === 'production' && !user.loggedin) return <Redirect to={"/login"} />;
+
+	if (!loaded) {
+		queryDB(readableTables.EVENTS).then(newEvents => {
+			setEvents(newEvents);
+			setLoaded(true);
+		}, e => {
+			console.error('Error reading events: ', e);
+			setLoaded(true);
+		});
+	}
 
 	// start the match
 	const startMatch = () => {
@@ -108,7 +122,9 @@ export function RunContainer(props) {
 		});
 	};
 
-	return (
+	if (loaded && events.length < 1) return <NoEvents />;
+
+	if (loaded) return (
 		<React.Fragment>
 			{/*
 				The actual content requires the template, a total match time,
@@ -140,6 +156,8 @@ export function RunContainer(props) {
 			/>
 		</React.Fragment>
 	);
+
+	return <React.Fragment />;
 };
 
 export default connect(mapStateToProps)(RunContainer);

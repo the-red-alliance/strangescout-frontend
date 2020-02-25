@@ -130,34 +130,32 @@ export function SetupDialog(props) {
 			<DialogTitle>Setup Match</DialogTitle>
 			<DialogContent className={classes.dialogContent}>
 				<div className={classes.container}>
-					{ events.length > 0 &&
-						<FormControl
-						style={{
-							display: 'flex',
-							gridColumn: "1 / 2",
-							gridRow: "1 / 2",
-						}}>
-							<InputLabel id="event-label">Event</InputLabel>
-							<Select
-								labelid="event-label"
-								id="event"
-								value={state.event}
-								onChange={handleChange('event')}
-							>
-								{events.map(item => {
-									return (
-										<MenuItem key={item.key} value={item.key}>{item.name}</MenuItem>
-									);
-								})}
-							</Select>
-						</FormControl>
-					}
+					<FormControl
+					style={{
+						display: 'flex',
+						gridColumn: "1 / 2",
+						gridRow: "1 / 2",
+					}}>
+						<InputLabel id="event-label">Event</InputLabel>
+						<Select
+							labelid="event-label"
+							id="event"
+							value={state.event}
+							onChange={handleChange('event')}
+						>
+							{events.map(item => {
+								return (
+									<MenuItem key={item.key} value={item.key}>{item.name}</MenuItem>
+								);
+							})}
+						</Select>
+					</FormControl>
 					<FormControl 
 					error={touched.team && validation.team.isInvalid}
 					style={{
 						display: 'flex',
 						gridColumn: "1 / 2",
-						gridRow: events.length > 0 ? "2 / 3" : "1 / 2",
+						gridRow: "2 / 3",
 					}}>
 						<InputLabel id='team-label'>Team</InputLabel>
 						{(selectedEvent && selectedEvent.teams && selectedEvent.teams.length > 0) ?
@@ -190,7 +188,7 @@ export function SetupDialog(props) {
 					style={{
 						display: 'flex',
 						gridColumn: "1 / 2",
-						gridRow: events.length > 0 ? "3 / 4" : "2 / 3",
+						gridRow: "3 / 4",
 					}}>
 						<InputLabel>Match</InputLabel>
 						<Input
@@ -208,7 +206,7 @@ export function SetupDialog(props) {
 					style={{
 						display: 'flex',
 						gridColumn: "1 / 2",
-						gridRow: events.length > 0 ? "4 / 5" : "3 / 4",
+						gridRow: "4 / 5",
 					}}>
 						<InputLabel id="robot-loadout-label">Loadout</InputLabel>
 						<Select

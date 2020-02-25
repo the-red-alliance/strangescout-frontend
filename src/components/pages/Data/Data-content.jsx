@@ -7,6 +7,8 @@ import { Selector } from './Selector.jsx';
 import { DataCard } from './DataCard.jsx';
 import { PitCard } from './PitCard.jsx';
 
+import NoEvents from '../../NoEvents.jsx';
+
 const useStyles = makeStyles(theme => ({
 	root: {
 		width: '100%',
@@ -17,8 +19,6 @@ const useStyles = makeStyles(theme => ({
 		flexWrap: 'wrap',
 		justifyContent: 'center',
 		alignItems: 'start',
-	},
-	dataCard: {
 	},
 }));
 
@@ -41,6 +41,8 @@ export function DataContent(props) {
 	}
 	
 	const [ selection, setSelection ] = useState(initialSelection);
+
+	if (events.length < 1) return <NoEvents />;
 
 	const teams = events.filter(event => event.key === selection.event)[0].teams ? events.filter(event => event.key === selection.event)[0].teams : [];
 	const selectedObj = processedTeams.filter(obj => (obj.team === selection.team && obj.event === selection.event))[0];

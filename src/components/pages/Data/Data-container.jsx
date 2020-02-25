@@ -30,18 +30,18 @@ function mapStateToProps(state) {
 	return {
 		user: state.user,
 		template: state.template,
-		events: state.events,
 	};
 };
 
 function DataContainer(props) {
+	const { user, template } = props;
 	const classes = useStyles();
-	
-	const { user, template, events } = props;
+
 	const [ processed, setProcessed ] = useState([]);
 	const [ dbRead, setDbRead ] = useState(false);
 	const [ runs, setRuns ] = useState([]);
 	const [ pits, setPits ] = useState([]);
+	const [ events, setEvents ] = useState([]);
 
 	// redirect to the login page if the user isn't logged in
 	// this has to be put after hook calls or else react errors
@@ -55,7 +55,10 @@ function DataContainer(props) {
 					setRuns(newRuns);
 					queryDB(readableTables.TEAMS).then(newTeams => {
 						setPits(newTeams);
-						setDbRead(true);
+						queryDB(readableTables.EVENTS).then(newEvents => {
+							setEvents(newEvents);
+							setDbRead(true);
+						});
 					});
 				});
 			});
