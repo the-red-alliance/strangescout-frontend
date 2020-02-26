@@ -149,7 +149,7 @@ export function PitCard(props) {
 											<Select
 											labelId={value.key + '-label' /* link to the label via it's id */}
 											id={value.key + '-select'}
-											value={state[value.key]}
+											value={state[value.key] ? state[value.key] : ''}
 											onChange={handleChange(value.key)}
 											>
 												{/* map out the items options */}

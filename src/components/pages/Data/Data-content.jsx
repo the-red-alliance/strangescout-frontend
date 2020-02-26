@@ -31,7 +31,7 @@ export function DataContent(props) {
 			<Selector events={events} selection={selection} selectEvent={selectEvent} selectTeam={selectTeam} teams={currentEvent.teams} />
 			<div className={classes.container}>
 				{/* Handle no teams at event and no data for team at event */}
-				{!currentEvent.teams || currentEvent.teams.length < 1 &&
+				{(!currentEvent.teams || currentEvent.teams.length < 1) &&
 					<Typography variant='h6'>No teams available!</Typography>
 				}
 				

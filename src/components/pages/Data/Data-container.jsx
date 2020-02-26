@@ -50,16 +50,22 @@ function DataContainer(props) {
 	const [ processedTeam, setProcessedTeam ] = useState({});
 
 	useEffect(() => {
-		if (selection.event && selection.team) {
-			queryDB(readableTables.RUNS, { event: selection.event, team: selection.team }).then(newRuns => {
-				queryDB(readableTables.PROCESSED_TEAMS, { event: selection.event, team: selection.team }).then(newProcessed => {
-					queryDB(readableTables.TEAMS, { event: selection.event, team: selection.team }).then(newTeams => {
-						setRuns(newRuns);
-						setProcessedTeam(newProcessed[0]);
-						setPit(newTeams[0]);
+		if (process.env.NODE_ENV === 'production') {
+			if (selection.event && selection.team) {
+				queryDB(readableTables.RUNS, { event: selection.event, team: selection.team }).then(newRuns => {
+					queryDB(readableTables.PROCESSED_TEAMS, { event: selection.event, team: selection.team }).then(newProcessed => {
+						queryDB(readableTables.TEAMS, { event: selection.event, team: selection.team }).then(newTeams => {
+							setRuns(newRuns);
+							setProcessedTeam(newProcessed[0]);
+							setPit(newTeams[0]);
+						});
 					});
 				});
-			});
+			}
+		} else {
+			setRuns([]);
+			setProcessedTeam({});
+			setPit({});
 		}
 	}, [selection]);
 
@@ -125,7 +131,6 @@ function DataContainer(props) {
 		setSelectedEvent(event);
 		// set our selection
 		setSelection({ ...selection, event: eventKey, team: team });
-		return { ...selection, event: eventKey, team: team };
 	};
 	/**
 	 * Select a team if it's available
@@ -166,6 +171,10 @@ function DataContainer(props) {
 				setLoaded(true);
 			});
 		} else {
+			const dummyEvent = JSON.parse('{"matches":[],"teams":[435,1225,1533,2640,2655,2682,3196,3336,3506,3661,3737,3822,4290,4534,4541,4795,4935,6177,6214,6512,6729,7265,7270,7443,7463,7715,8030,8304,8315],"_id":"5e52e57649c9c556f7c1cde2","city":"Pembroke","country":"USA","district":{"abbreviation":"fnc","display_name":"FIRST North Carolina","key":"2020fnc","year":2020},"endDate":"2020-03-08T05:00:00.000Z","eventCode":"ncpem","key":"2020ncpem","name":"FNC District UNC Pembroke Event","startDate":"2020-03-06T05:00:00.000Z","year":2020,"updated":"2020-02-26T03:07:22.982Z","__v":0}');
+			setEvents([dummyEvent]);
+			setSelectedEvent(dummyEvent);
+			setSelection({ ...selection, event: dummyEvent.key, team: dummyEvent.teams[0] });
 			setLoaded(true);
 		}
 	}
