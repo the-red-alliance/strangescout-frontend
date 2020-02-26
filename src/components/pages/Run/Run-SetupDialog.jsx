@@ -85,7 +85,6 @@ export function SetupDialog(props) {
 		event: currentEvent() ? currentEvent().key : '',
 		team: '',
 		match: '',
-		position: '',
 		loadout: '[]',
 	};
 	const [state, setState] = useState(initialState);
@@ -119,7 +118,6 @@ export function SetupDialog(props) {
 			event: events.length > 0 ? state.event : '',
 			team: state.team,
 			match: state.match,
-			position: state.position,
 			journal: newJournal
 		});
 		startMatchAction();

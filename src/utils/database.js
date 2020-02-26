@@ -125,7 +125,7 @@ export const queryDB = (selectedTable, query) => new Promise((resolve, reject) =
 						// then split that no-whitespace string at the commas to separate the keys,
 						// then check if the query key is in the versions table definition
 						// if the key is available, set the keyAvailable check to true
-						if (version.stores[selectedTable].replace(/\s/g, "").split(',').includes(key)) keyAvailable = true;
+						if (version.stores[selectedTable] && version.stores[selectedTable].replace(/\s/g, "").split(',').includes(key)) keyAvailable = true;
 						// if we're on the last version, then if the key hasn't been found in any database version
 						if (i === versions.length - 1 && !keyAvailable) {
 							// log an error and reject the promise
@@ -473,7 +473,7 @@ export const sync = (token) => new Promise((resolve, reject) => {
 							// increment the readable counter
 							readableCounter = readableCounter + 1;
 							// if this was the last readable and we haven't failed yet
-							if (readableCounter === Object.keys(readableTables.length)) {
+							if (readableCounter === Object.keys(readableTables).length) {
 								if (failed) {
 									// error and fail
 									console.error('Failed while syncing readables: ', failed);

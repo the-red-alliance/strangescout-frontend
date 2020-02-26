@@ -7,9 +7,7 @@ import { Login } from './Login-content.jsx';
 
 import { loginUser } from '../../../store/user/actions';
 import { loadTemplate } from '../../../store/template/actions';
-import { sync, queryDB, readableTables } from '../../../utils/database';
-
-import { setEvents } from '../../../store/events/actions';
+import { sync } from '../../../utils/database';
 
 // map store to prop (currently not needed here)
 function mapStateToProps(state) {
@@ -25,13 +23,7 @@ function LoginContainer(props) {
 		if (success) {
 			history.push('/');
 			props.dispatch(loadTemplate(newSession.token));
-			sync(newSession.token).then(() => {
-				queryDB(readableTables.EVENTS).then(events => {
-					props.dispatch(setEvents(events));
-				}, e => {
-					console.error('error loading events from local db: ', e);
-				});
-			}, e => console.error('error syncing data: ', e));
+			sync(newSession.token).then(() => {}, e => console.error('error syncing data: ', e));
 		};
 	};
 

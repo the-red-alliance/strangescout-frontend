@@ -85,6 +85,9 @@ export function PitCard(props) {
 	// set a blank state to keep track of touched fields
 	const [ touched, setTouched ] = useState({});
 	const [ currentTeam, setCurrentTeam ] = useState(0);
+
+	if (Object.keys(template).length < 1) return <React.Fragment />;
+
 	// create our validation object from the data validator
 	const validation = createValidator(template).validate(state);
 

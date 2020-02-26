@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 
@@ -8,6 +8,8 @@ import { DataContent } from './Data-content.jsx';
 
 import { sync, addToQueue, queueTables, queryDB, readableTables } from '../../../utils/database';
 import { sendNotification } from '../../../store/notifications/actions';
+
+import NoEvents from '../../NoEvents';
 
 const useStyles = makeStyles(theme => ({
 	root: {
@@ -37,55 +39,40 @@ function DataContainer(props) {
 	const { user, template } = props;
 	const classes = useStyles();
 
-	const [ processed, setProcessed ] = useState([]);
-	const [ dbRead, setDbRead ] = useState(false);
-	const [ runs, setRuns ] = useState([]);
-	const [ pits, setPits ] = useState([]);
+	const [ loaded, setLoaded ] = useState(false);
+
 	const [ events, setEvents ] = useState([]);
+	const [ selection, setSelection ] = useState({});
+	const [ selectedEvent, setSelectedEvent ] = useState({});
+
+	const [ runs, setRuns ] = useState([]);
+	const [ pit, setPit ] = useState({});
+	const [ processedTeam, setProcessedTeam ] = useState({});
+
+	useEffect(() => {
+		if (selection.event && selection.team) {
+			queryDB(readableTables.RUNS, { event: selection.event, team: selection.team }).then(newRuns => {
+				queryDB(readableTables.PROCESSED_TEAMS, { event: selection.event, team: selection.team }).then(newProcessed => {
+					queryDB(readableTables.TEAMS, { event: selection.event, team: selection.team }).then(newTeams => {
+						setRuns(newRuns);
+						setProcessedTeam(newProcessed[0]);
+						setPit(newTeams[0]);
+					});
+				});
+			});
+		}
+	}, [selection]);
 
 	// redirect to the login page if the user isn't logged in
 	// this has to be put after hook calls or else react errors
 	if (process.env.NODE_ENV === 'production' && !user.loggedin) return <Redirect to={"/login"} />;
 
-	if (!dbRead) {
-		if (process.env.NODE_ENV === 'production') {
-			queryDB(readableTables.PROCESSED_TEAMS).then(docs => {
-				setProcessed(docs);
-				queryDB(readableTables.RUNS).then(newRuns => {
-					setRuns(newRuns);
-					queryDB(readableTables.TEAMS).then(newTeams => {
-						setPits(newTeams);
-						queryDB(readableTables.EVENTS).then(newEvents => {
-							setEvents(newEvents);
-							setDbRead(true);
-						});
-					});
-				});
-			});
-		} else {
-			setProcessed([
-				JSON.parse('{"event":"2020ncpem","notes":[],"_id":"5e3a0a149b88210008cacf6a","team":1533,"matches":2,"data":{"power_cells":{"upper_cell":{"average":16,"average_bestfit":{"yintercept":4,"slope":8},"average_duration":8.46875},"lower_cell":{"average":1,"average_bestfit":{"yintercept":-2,"slope":2},"average_duration":3},"drop_cell":{"average":1.5,"average_bestfit":{"yintercept":0,"slope":1},"average_duration":13.666666666666666}},"start_panel":{"successful_panel":{"average":2,"average_bestfit":{"yintercept":2,"slope":0},"average_duration":7,"average_duration_bestfit":{"yintercept":7,"slope":0}}},"start_hang":{"successful_hang":{"average":0.5,"average_bestfit":{"yintercept":1,"slope":0},"average_duration":9,"average_duration_bestfit":{"yintercept":6,"slope":2}}}},"updated":"2020-02-05T00:19:32.202Z","__v":0}')
-			]);
-			setRuns([
-				JSON.parse('{"event":"2020ncpem","_id":"5e3a081644497700079b9e45","team":1533,"match":1,"position":"middle","journal":[{"_id":"5e3a081644497700079b9e67","event":"get_cell","time":23},{"_id":"5e3a081644497700079b9e66","event":"get_cell","time":24},{"_id":"5e3a081644497700079b9e65","event":"get_cell","time":25},{"_id":"5e3a081644497700079b9e64","event":"get_cell","time":26},{"_id":"5e3a081644497700079b9e63","event":"get_cell","time":28},{"_id":"5e3a081644497700079b9e62","event":"upper_cell","time":33},{"_id":"5e3a081644497700079b9e61","event":"upper_cell","time":33},{"_id":"5e3a081644497700079b9e60","event":"upper_cell","time":34},{"_id":"5e3a081644497700079b9e5f","event":"upper_cell","time":34},{"_id":"5e3a081644497700079b9e5e","event":"upper_cell","time":35},{"_id":"5e3a081644497700079b9e5d","event":"start_panel","time":38},{"_id":"5e3a081644497700079b9e5c","event":"successful_panel","time":44},{"_id":"5e3a081644497700079b9e5b","event":"get_cell","time":50},{"_id":"5e3a081644497700079b9e5a","event":"get_cell","time":50},{"_id":"5e3a081644497700079b9e59","event":"get_cell","time":51},{"_id":"5e3a081644497700079b9e58","event":"get_cell","time":53},{"_id":"5e3a081644497700079b9e57","event":"upper_cell","time":56},{"_id":"5e3a081644497700079b9e56","event":"upper_cell","time":56},{"_id":"5e3a081644497700079b9e55","event":"upper_cell","time":56},{"_id":"5e3a081644497700079b9e54","event":"get_cell","time":62},{"_id":"5e3a081644497700079b9e53","event":"get_cell","time":63},{"_id":"5e3a081644497700079b9e52","event":"get_cell","time":63},{"_id":"5e3a081644497700079b9e51","event":"get_cell","time":64},{"_id":"5e3a081644497700079b9e50","event":"upper_cell","time":66},{"_id":"5e3a081644497700079b9e4f","event":"upper_cell","time":66},{"_id":"5e3a081644497700079b9e4e","event":"upper_cell","time":67},{"_id":"5e3a081644497700079b9e4d","event":"drop_cell","time":68},{"_id":"5e3a081644497700079b9e4c","event":"upper_cell","time":69},{"_id":"5e3a081644497700079b9e4b","event":"start_defend","time":84},{"_id":"5e3a081644497700079b9e4a","event":"end_defend","time":104},{"_id":"5e3a081644497700079b9e49","event":"start_panel","time":107},{"_id":"5e3a081644497700079b9e48","event":"successful_panel","time":115},{"_id":"5e3a081644497700079b9e47","event":"start_hang","time":122},{"_id":"5e3a081644497700079b9e46","event":"successful_hang","time":130}],"notes":"test","scouter":"penguinsnail@onebuttonmouse.com","updated":"2020-02-05T00:11:02.744Z","__v":0}'),
-				JSON.parse('{"event":"2020ncpem","_id":"5e38cd16dfc0e10007d7835a","team":1533,"match":13,"position":"middle","journal":[{"_id":"5e38cd16dfc0e10007d78395","event":"get_cell","time":0},{"_id":"5e38cd16dfc0e10007d78394","event":"get_cell","time":0},{"_id":"5e38cd16dfc0e10007d78393","event":"upper_cell","time":12},{"_id":"5e38cd16dfc0e10007d78392","event":"upper_cell","time":12},{"_id":"5e38cd16dfc0e10007d78391","event":"get_cell","time":16},{"_id":"5e38cd16dfc0e10007d78390","event":"get_cell","time":16},{"_id":"5e38cd16dfc0e10007d7838f","event":"get_cell","time":17},{"_id":"5e38cd16dfc0e10007d7838e","event":"get_cell","time":18},{"_id":"5e38cd16dfc0e10007d7838d","event":"get_cell","time":19},{"_id":"5e38cd16dfc0e10007d7838c","event":"upper_cell","time":24},{"_id":"5e38cd16dfc0e10007d7838b","event":"upper_cell","time":24},{"_id":"5e38cd16dfc0e10007d7838a","event":"upper_cell","time":24},{"_id":"5e38cd16dfc0e10007d78389","event":"upper_cell","time":25},{"_id":"5e38cd16dfc0e10007d78388","event":"upper_cell","time":25},{"_id":"5e38cd16dfc0e10007d78387","event":"start_panel","time":31},{"_id":"5e38cd16dfc0e10007d78386","event":"successful_panel","time":37},{"_id":"5e38cd16dfc0e10007d78385","event":"get_cell","time":40},{"_id":"5e38cd16dfc0e10007d78384","event":"get_cell","time":43},{"_id":"5e38cd16dfc0e10007d78383","event":"get_cell","time":44},{"_id":"5e38cd16dfc0e10007d78382","event":"get_cell","time":45},{"_id":"5e38cd16dfc0e10007d78381","event":"get_cell","time":47},{"_id":"5e38cd16dfc0e10007d78380","event":"upper_cell","time":48},{"_id":"5e38cd16dfc0e10007d7837f","event":"upper_cell","time":49},{"_id":"5e38cd16dfc0e10007d7837e","event":"drop_cell","time":50},{"_id":"5e38cd16dfc0e10007d7837d","event":"upper_cell","time":50},{"_id":"5e38cd16dfc0e10007d7837c","event":"upper_cell","time":51},{"_id":"5e38cd16dfc0e10007d7837b","event":"get_cell","time":54},{"_id":"5e38cd16dfc0e10007d7837a","event":"get_cell","time":55},{"_id":"5e38cd16dfc0e10007d78379","event":"get_cell","time":57},{"_id":"5e38cd16dfc0e10007d78378","event":"start_defend","time":64},{"_id":"5e38cd16dfc0e10007d78377","event":"end_defend","time":72},{"_id":"5e38cd16dfc0e10007d78376","event":"get_cell","time":81},{"_id":"5e38cd16dfc0e10007d78375","event":"get_cell","time":82},{"_id":"5e38cd16dfc0e10007d78374","event":"drop_cell","time":84},{"_id":"5e38cd16dfc0e10007d78373","event":"upper_cell","time":85},{"_id":"5e38cd16dfc0e10007d78372","event":"upper_cell","time":85},{"_id":"5e38cd16dfc0e10007d78371","event":"upper_cell","time":86},{"_id":"5e38cd16dfc0e10007d78370","event":"upper_cell","time":86},{"_id":"5e38cd16dfc0e10007d7836f","event":"start_panel","time":89},{"_id":"5e38cd16dfc0e10007d7836e","event":"successful_panel","time":97},{"_id":"5e38cd16dfc0e10007d7836d","event":"get_cell","time":108},{"_id":"5e38cd16dfc0e10007d7836c","event":"get_cell","time":109},{"_id":"5e38cd16dfc0e10007d7836b","event":"get_cell","time":109},{"_id":"5e38cd16dfc0e10007d7836a","event":"lower_cell","time":111},{"_id":"5e38cd16dfc0e10007d78369","event":"lower_cell","time":112},{"_id":"5e38cd16dfc0e10007d78368","event":"get_cell","time":114},{"_id":"5e38cd16dfc0e10007d78367","event":"get_cell","time":114},{"_id":"5e38cd16dfc0e10007d78366","event":"get_cell","time":115},{"_id":"5e38cd16dfc0e10007d78365","event":"get_cell","time":115},{"_id":"5e38cd16dfc0e10007d78364","event":"upper_cell","time":117},{"_id":"5e38cd16dfc0e10007d78363","event":"upper_cell","time":118},{"_id":"5e38cd16dfc0e10007d78362","event":"upper_cell","time":118},{"_id":"5e38cd16dfc0e10007d78361","event":"get_cell","time":122},{"_id":"5e38cd16dfc0e10007d78360","event":"get_cell","time":122},{"_id":"5e38cd16dfc0e10007d7835f","event":"get_cell","time":123},{"_id":"5e38cd16dfc0e10007d7835e","event":"upper_cell","time":124},{"_id":"5e38cd16dfc0e10007d7835d","event":"upper_cell","time":125},{"_id":"5e38cd16dfc0e10007d7835c","event":"start_hang","time":128},{"_id":"5e38cd16dfc0e10007d7835b","event":"successful_hang","time":138}],"notes":"test 1","scouter":"penguinsnail@onebuttonmouse.com","updated":"2020-02-04T01:47:02.152Z","__v":0}'),
-				JSON.parse('{"event":"2020ncpem","_id":"5e38cd16dfc0e10007d7835a","team":1533,"match":10,"position":"middle","journal":[{"_id":"5e38cd16dfc0e10007d78395","event":"get_cell","time":0},{"_id":"5e38cd16dfc0e10007d78394","event":"get_cell","time":0},{"_id":"5e38cd16dfc0e10007d78393","event":"upper_cell","time":12},{"_id":"5e38cd16dfc0e10007d78392","event":"upper_cell","time":12},{"_id":"5e38cd16dfc0e10007d78391","event":"get_cell","time":16},{"_id":"5e38cd16dfc0e10007d78390","event":"get_cell","time":16},{"_id":"5e38cd16dfc0e10007d7838f","event":"get_cell","time":17},{"_id":"5e38cd16dfc0e10007d7838e","event":"get_cell","time":18},{"_id":"5e38cd16dfc0e10007d7838d","event":"get_cell","time":19},{"_id":"5e38cd16dfc0e10007d7838c","event":"upper_cell","time":24},{"_id":"5e38cd16dfc0e10007d7838b","event":"upper_cell","time":24},{"_id":"5e38cd16dfc0e10007d7838a","event":"upper_cell","time":24},{"_id":"5e38cd16dfc0e10007d78389","event":"upper_cell","time":25},{"_id":"5e38cd16dfc0e10007d78388","event":"upper_cell","time":25},{"_id":"5e38cd16dfc0e10007d78387","event":"start_panel","time":31},{"_id":"5e38cd16dfc0e10007d78386","event":"successful_panel","time":37},{"_id":"5e38cd16dfc0e10007d78385","event":"get_cell","time":40},{"_id":"5e38cd16dfc0e10007d78384","event":"get_cell","time":43},{"_id":"5e38cd16dfc0e10007d78383","event":"get_cell","time":44},{"_id":"5e38cd16dfc0e10007d78382","event":"get_cell","time":45},{"_id":"5e38cd16dfc0e10007d78381","event":"get_cell","time":47},{"_id":"5e38cd16dfc0e10007d78380","event":"upper_cell","time":48},{"_id":"5e38cd16dfc0e10007d7837f","event":"upper_cell","time":49},{"_id":"5e38cd16dfc0e10007d7837e","event":"drop_cell","time":50},{"_id":"5e38cd16dfc0e10007d7837d","event":"upper_cell","time":50},{"_id":"5e38cd16dfc0e10007d7837c","event":"upper_cell","time":51},{"_id":"5e38cd16dfc0e10007d7837b","event":"get_cell","time":54},{"_id":"5e38cd16dfc0e10007d7837a","event":"get_cell","time":55},{"_id":"5e38cd16dfc0e10007d78379","event":"get_cell","time":57},{"_id":"5e38cd16dfc0e10007d78378","event":"start_defend","time":64},{"_id":"5e38cd16dfc0e10007d78377","event":"end_defend","time":72},{"_id":"5e38cd16dfc0e10007d78376","event":"get_cell","time":81},{"_id":"5e38cd16dfc0e10007d78375","event":"get_cell","time":82},{"_id":"5e38cd16dfc0e10007d78374","event":"drop_cell","time":84},{"_id":"5e38cd16dfc0e10007d78373","event":"upper_cell","time":85},{"_id":"5e38cd16dfc0e10007d78372","event":"upper_cell","time":85},{"_id":"5e38cd16dfc0e10007d78371","event":"upper_cell","time":86},{"_id":"5e38cd16dfc0e10007d78370","event":"upper_cell","time":86},{"_id":"5e38cd16dfc0e10007d7836f","event":"start_panel","time":89},{"_id":"5e38cd16dfc0e10007d7836e","event":"successful_panel","time":97},{"_id":"5e38cd16dfc0e10007d7836d","event":"get_cell","time":108},{"_id":"5e38cd16dfc0e10007d7836c","event":"get_cell","time":109},{"_id":"5e38cd16dfc0e10007d7836b","event":"get_cell","time":109},{"_id":"5e38cd16dfc0e10007d7836a","event":"lower_cell","time":111},{"_id":"5e38cd16dfc0e10007d78369","event":"lower_cell","time":112},{"_id":"5e38cd16dfc0e10007d78368","event":"get_cell","time":114},{"_id":"5e38cd16dfc0e10007d78367","event":"get_cell","time":114},{"_id":"5e38cd16dfc0e10007d78366","event":"get_cell","time":115},{"_id":"5e38cd16dfc0e10007d78365","event":"get_cell","time":115},{"_id":"5e38cd16dfc0e10007d78364","event":"upper_cell","time":117},{"_id":"5e38cd16dfc0e10007d78363","event":"upper_cell","time":118},{"_id":"5e38cd16dfc0e10007d78362","event":"upper_cell","time":118},{"_id":"5e38cd16dfc0e10007d78361","event":"get_cell","time":122},{"_id":"5e38cd16dfc0e10007d78360","event":"get_cell","time":122},{"_id":"5e38cd16dfc0e10007d7835f","event":"get_cell","time":123},{"_id":"5e38cd16dfc0e10007d7835e","event":"upper_cell","time":124},{"_id":"5e38cd16dfc0e10007d7835d","event":"upper_cell","time":125}],"notes":"test 1","scouter":"penguinsnail@onebuttonmouse.com","updated":"2020-02-04T01:47:02.152Z","__v":0}')
-			]);
-			setPits([
-				{
-					event: '2020ncpem',
-					team: 254,
-					data: {
-						ground_clearance: 2,
-						control_panel: true,
-						drivetrain: 'swerve'
-					}
-				}
-			]);
-			setDbRead(true);
-		}
-	}
-
+	/**
+	 * Update a team's pit doc
+	 * @param {string} event The event key
+	 * @param {number} team The team number
+	 * @param {{}} data The new team doc
+	 */
 	const updatePit = (event, team, data) => {
 		// store the team doc to local db
 		addToQueue(queueTables.TEAMS, {team: team, event: event, data: data}).then(() => {
@@ -97,7 +84,7 @@ function DataContainer(props) {
 					variant: 'success',
 					text: 'Updated data!'
 				}));
-			}, (e) => {
+			}, e => {
 				// error handling
 				// log to console and notify the user
 				console.error('failed to sync pits ', e);
@@ -106,7 +93,7 @@ function DataContainer(props) {
 					text: 'Failed to sync data!'
 				}));
 			});
-		}, (e) => {
+		}, e => {
 			// error handling
 			// log to console and notify the user
 			console.error('failed to save pit ', e);
@@ -117,9 +104,95 @@ function DataContainer(props) {
 		});
 	};
 
+	/**
+	 * Select an event and set team if the current team isn't in the event
+	 * @param {string} event the event code
+	 */
+	const selectEvent = (eventKey) => {
+		// narrow down to events with this key (should be one and only one)
+		const filteredEvents = events.filter(event => event.key === eventKey);
+		// if we didn't find any events just quit
+		if (filteredEvents.length < 1) return;
+
+		// select the first match (again, should only be one)
+		const event = filteredEvents[0];
+		// if the event doesn't have any teams quit
+		if (event.teams.length < 1) return;
+
+		// if this event has the team we have selected, keep it, else pick the first team listed
+		const team = event.teams.includes(selection.team) ? selection.team : event.teams[0];
+		// set the selected event
+		setSelectedEvent(event);
+		// set our selection
+		setSelection({ ...selection, event: eventKey, team: team });
+		return { ...selection, event: eventKey, team: team };
+	};
+	/**
+	 * Select a team if it's available
+	 * @param {number} team the team number
+	 */
+	const selectTeam = (team) => {
+		// if the current event has this team, set it, else default to the first team in the event
+		const newTeam = selectedEvent.teams.includes(team) ? team : selectEvent.teams[0];
+		if (!selectedEvent.teams.includes(team)) console.warn('current event doesn\'t have team ' + team + '\nDefaulting to team ' + newTeam);
+
+		// set our selection
+		setSelection({ ...selection, team: newTeam });
+	};
+
+	/**
+	 * Get the currently occuring event from an array of events
+	 * 
+	 * Returns the most recent event if there isn't an active event, or the first if none have passed
+	 * @param {[]} events array of events to get the current event from
+	 */
+	const getCurrentEvent = (givenEvents) => {
+		// if there aren't any events quit
+		if (givenEvents.length < 1) return;
+		// get all started events
+		const startedEvents = givenEvents.filter(event => event.startDate < Date.now()).sort((a, b) => a.startDate - b.startDate);
+		// if there aren't any started events or we only have one event overall, return the first event
+		if (startedEvents.length === 0 || givenEvents.length === 1) return givenEvents[0];
+		// else return the most recent
+		return startedEvents[startedEvents.length - 1];
+	};
+
+	if (!loaded) {
+		if (process.env.NODE_ENV === 'production') {
+			queryDB(readableTables.EVENTS).then(newEvents => {
+				setEvents(newEvents);
+				// select the current event from our newly read events
+				selectEvent(getCurrentEvent(newEvents).key);
+				setLoaded(true);
+			});
+		} else {
+			setLoaded(true);
+		}
+	}
+
+	if (!loaded) return <React.Fragment />;
+
+	if (events.length < 1) return <NoEvents />;
+
 	return (
 		<div className={classes.root}>
-			{true && <DataContent template={template} events={events} processedTeams={processed} rawRuns={runs.sort((a, b) => a.match - b.match)} updatePit={updatePit} pits={pits} />}
+			{true &&
+				<DataContent
+				template={template}
+				events={events}
+
+				processedTeam={processedTeam}
+				runs={runs.sort((a, b) => a.match - b.match)}
+				pit={pit}
+
+				updatePit={updatePit}
+				selectEvent={selectEvent}
+				selectTeam={selectTeam}
+
+				selection={selection}
+				currentEvent={selectedEvent}
+				/>
+			}
 		</div>
 	);
 };

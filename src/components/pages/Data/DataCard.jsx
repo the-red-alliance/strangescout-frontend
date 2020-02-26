@@ -62,6 +62,8 @@ export function DataCard(props) {
 	const { template, processedObject, teamsRuns, topKey } = props;
 	const classes = useStyles();
 
+	if (Object.keys(template).length < 1) return <React.Fragment />;
+
 	// find the top item by iterating through the game template in search of `topKey`
 	const topItem = template.scout.run.filter(item => item.key === topKey)[0];
 	// set the title to the `analysisDisplay` if it exists, else default to the normal display value
