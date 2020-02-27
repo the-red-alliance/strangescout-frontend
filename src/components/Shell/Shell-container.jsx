@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { logout } from '../../store/user/actions';
 import { sendNotification } from '../../store/notifications/actions';
 
-import { clearData } from '../../utils/database';
+import { clearData } from '../../utils/storage';
 
 // import shell content
 import { Shell } from './Shell-content.jsx';

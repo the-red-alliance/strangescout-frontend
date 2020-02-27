@@ -46,7 +46,7 @@ export const readableTables = {
 	PROCESSED_TEAMS: 'processedTeams',
 	TEAMS: 'teams',
 	EVENTS: 'events',
-//	MOTIONWORKS: 'motionworks'
+	MOTIONWORKS: 'motionworks'
 };
 // Readable tables fetch URLs
 export const readableBaseURLs = new Map([
@@ -441,6 +441,29 @@ export const fetchDeletes = (selectedTable, token) => new Promise((resolve, reje
 });
 
 /**
+ * Read and save the field image from the API if it exists
+ * 
+ * (used for heatmaps)
+ * @param {string} token the user's JWT token
+ */
+export const fetchFieldImg = (token) => new Promise((resolve, reject) => {
+	get(window.origin + 'api/field.png', token, null, 'blob').then(xhr => {
+		if (xhr.status === 200) {
+			let reader = new FileReader();
+			reader.onloadend = () => {
+				localStorage.setItem('fieldImg', reader.result);
+				resolve();
+			}
+			reader.readAsDataURL(xhr.response);
+		} else if (xhr.status === 404) {
+			resolve();
+		} else {
+			reject();
+		}
+	});
+});
+
+/**
  * Push all queues, fetch all readables, update all deletes
  * @param {string} token The user's JWT token
  */
@@ -491,7 +514,12 @@ export const sync = (token) => new Promise((resolve, reject) => {
 													console.error('Failed while syncing deletables: ', failed);
 													reject(failed);
 												} else {
-													resolve();
+													fetchFieldImg(token).then(() => {
+														resolve();
+													}, e => {
+														console.error('error attempting to fetch field image: ', e);
+														reject(e);
+													});
 												}
 											}
 										}, e => {

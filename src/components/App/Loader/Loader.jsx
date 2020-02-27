@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { verifyLogin } from '../../../store/user/actions';
 import { loadTemplate, deleteTemplate } from '../../../store/template/actions';
 
-import { sync, clearData } from '../../../utils/database';
+import { sync, clearData } from '../../../utils/storage';
 
 const mapStateToProps = (state) => {
 	return {};

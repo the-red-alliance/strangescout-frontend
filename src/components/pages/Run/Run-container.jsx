@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Redirect, useHistory } from 'react-router-dom';
 
 import { sendNotification } from '../../../store/notifications/actions';
-import { sync, queryDB, readableTables, addToQueue, queueTables } from '../../../utils/database';
+import { sync, queryDB, readableTables, addToQueue, queueTables } from '../../../utils/storage';
 
 import { Run } from './Run-content.jsx';
 import { SetupDialog } from './Run-SetupDialog.jsx';

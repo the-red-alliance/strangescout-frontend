@@ -7,7 +7,7 @@ import { Login } from './Login-content.jsx';
 
 import { loginUser } from '../../../store/user/actions';
 import { loadTemplate } from '../../../store/template/actions';
-import { sync } from '../../../utils/database';
+import { sync } from '../../../utils/storage';
 
 // map store to prop (currently not needed here)
 function mapStateToProps(state) {

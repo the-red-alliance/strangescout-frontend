@@ -5,7 +5,7 @@ import { Redirect } from 'react-router-dom';
 // import content
 import { Home } from './Home-content.jsx';
 
-import { sync } from '../../../utils/database';
+import { sync } from '../../../utils/storage';
 import { sendNotification } from '../../../store/notifications/actions';
 
 // map store to prop

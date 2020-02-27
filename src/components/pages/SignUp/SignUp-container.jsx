@@ -8,7 +8,7 @@ import { SignUp } from './SignUp-content.jsx';
 
 import { createUser } from '../../../store/user/actions';
 import { loadTemplate } from '../../../store/template/actions';
-import { sync } from '../../../utils/database';
+import { sync } from '../../../utils/storage';
 
 function useQuery() {
 	return new URLSearchParams(useLocation().search);

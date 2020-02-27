@@ -6,6 +6,7 @@ import { Typography } from '@material-ui/core';
 import { Selector } from './Selector.jsx';
 import { DataCard } from './DataCard.jsx';
 import { PitCard } from './PitCard.jsx';
+import { HeatmapCard } from './HeatmapCard.jsx';
 
 const useStyles = makeStyles(theme => ({
 	root: {
@@ -22,7 +23,7 @@ const useStyles = makeStyles(theme => ({
 
 export function DataContent(props) {
 	const classes = useStyles();
-	const { template, events, processedTeam, runs, pit, updatePit, selection, selectEvent, selectTeam, currentEvent } = props;
+	const { template, events, processedTeam, runs, motionworks, pit, updatePit, selection, selectEvent, selectTeam, currentEvent, fieldImg } = props;
 
 	if (!currentEvent || Object.keys(currentEvent).length < 1) return <React.Fragment />;
 
@@ -43,6 +44,10 @@ export function DataContent(props) {
 				{processedTeam && processedTeam.data && Object.keys(processedTeam.data).map(key => (
 					<DataCard key={key} className={classes.dataCard} template={template} topKey={key} processedObject={processedTeam} teamsRuns={runs} />
 				))}
+
+				{motionworks.length > 0 &&
+					<HeatmapCard data={motionworks} fieldImg={fieldImg} />
+				}
 			</div>
 		</div>
 	);

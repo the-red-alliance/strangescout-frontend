@@ -3,15 +3,17 @@
  * @param {string} url URL to GET
  * @param {string} token passport auth token
  * @param {[]} headers Array of objects for headers
+ * @param {string} responseType XHR response type
  * ex. `{name: 'Content-type', value: 'application/json'}`
  * @returns {Promise<XMLHttpRequest>} promise resolves an xhr object
  */
-export function get(url, token, headers) {
+export function get(url, token, headers, responseType) {
 	return new Promise((resolve, reject) => {
 		let xhr = new XMLHttpRequest();
 		xhr.open('GET', url, true);
 
 		if (token) xhr.setRequestHeader('Authorization', 'Token ' + token);
+		if (responseType) xhr.responseType = responseType;
 
 		headers.forEach((item) => {
 			xhr.setRequestHeader(item.name, item.value);

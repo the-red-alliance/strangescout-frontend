@@ -6,7 +6,7 @@ import { makeStyles } from '@material-ui/core/styles';
 
 import { DataContent } from './Data-content.jsx';
 
-import { sync, addToQueue, queueTables, queryDB, readableTables } from '../../../utils/database';
+import { sync, addToQueue, queueTables, queryDB, readableTables } from '../../../utils/storage';
 import { sendNotification } from '../../../store/notifications/actions';
 
 import NoEvents from '../../NoEvents';
@@ -48,6 +48,9 @@ function DataContainer(props) {
 	const [ runs, setRuns ] = useState([]);
 	const [ pit, setPit ] = useState({});
 	const [ processedTeam, setProcessedTeam ] = useState({});
+	const [ motionworks, setMotionworks ] = useState([]);
+
+	const [ fieldImg, setFieldImg ] = useState('');
 
 	useEffect(() => {
 		if (process.env.NODE_ENV === 'production') {
@@ -55,9 +58,16 @@ function DataContainer(props) {
 				queryDB(readableTables.RUNS, { event: selection.event, team: selection.team }).then(newRuns => {
 					queryDB(readableTables.PROCESSED_TEAMS, { event: selection.event, team: selection.team }).then(newProcessed => {
 						queryDB(readableTables.TEAMS, { event: selection.event, team: selection.team }).then(newTeams => {
-							setRuns(newRuns);
-							setProcessedTeam(newProcessed[0]);
-							setPit(newTeams[0]);
+							queryDB(readableTables.MOTIONWORKS, { event: selection.event, team: selection.team }).then(readMotionworks => {
+								setRuns(newRuns);
+								setProcessedTeam(newProcessed[0]);
+								setPit(newTeams[0]);
+								let newMotionworks = [];
+								newMotionworks.forEach(motion => {
+									if (motion.positions) newMotionworks.concat(motion.positions);
+								});
+								setMotionworks(newMotionworks);
+							});
 						});
 					});
 				});
@@ -66,6 +76,7 @@ function DataContainer(props) {
 			setRuns([]);
 			setProcessedTeam({});
 			setPit({});
+			setMotionworks([]);
 		}
 	}, [selection]);
 
@@ -165,6 +176,7 @@ function DataContainer(props) {
 	if (!loaded) {
 		if (process.env.NODE_ENV === 'production') {
 			queryDB(readableTables.EVENTS).then(newEvents => {
+				setFieldImg(localStorage.getItem('fieldImg'));
 				setEvents(newEvents);
 				// select the current event from our newly read events
 				selectEvent(getCurrentEvent(newEvents).key);
@@ -192,6 +204,7 @@ function DataContainer(props) {
 
 				processedTeam={processedTeam}
 				runs={runs.sort((a, b) => a.match - b.match)}
+				motionworks={motionworks}
 				pit={pit}
 
 				updatePit={updatePit}
@@ -200,6 +213,8 @@ function DataContainer(props) {
 
 				selection={selection}
 				currentEvent={selectedEvent}
+
+				fieldImg={fieldImg}
 				/>
 			}
 		</div>
