@@ -77,7 +77,7 @@ export function DataCard(props) {
 
 	if (!topItem.singleUse) {
 		// if the top item in the template has children:
-		if (topItem.children) {
+		if (topItem.type !== 'duration' && topItem.children) {
 			// for each run/match the team has done:
 			teamsRuns.forEach(run => {
 				// start a new datapoint with the name `Match <match_number>`
@@ -93,13 +93,44 @@ export function DataCard(props) {
 				// push the final datapoint into our data array
 				data.push(datapoint);
 			});
+		} else if (topItem.type === 'duration') {
+			// for each run/match the team has done:
+			teamsRuns.forEach(run => {
+				// start a new datapoint with the name `Match <match_number>`
+				let datapoint = { name: 'Match ' + run.match };
+				// load journal
+				let journal = [ ...run.journal ].filter(journalItem => ([ topItem.startKey, topItem.endKey ].includes(journalItem.event)));
+				let indexes = [];
+				if (journal[journal.length - 1].event === topItem.startKey){
+					journal.push({event: topItem.endKey, time: template.gameInfo.duration});
+				}
+				// for each journal event
+				journal.forEach((value, index) => {
+					// if the journal event matches the current child we're tracking
+					if (value.event === topItem.endKey) {
+						// push it's index to our indexes array
+						indexes.push(index);
+					}
+				});
+				// initialize total time counter
+				let totalTime = 0;
+				// for each tracked index (each occurrence)
+				indexes.forEach(indexValue => {
+					// the difference in timestamp between our tracked child and the event before it (the start/get event)
+					// is added to the total time counter
+					totalTime = totalTime + ( journal[indexValue].time - journal[indexValue-1].time );
+				});
+				datapoint['Duration'] = totalTime;
+
+				// push the final datapoint into our data array
+				data.push(datapoint);
+			});
 		}
 	} else {
 		if (topItem.type === 'single_item') {
 			let total = 0;
 
 			Object.keys(processedObject.data[topKey]).forEach(childKey => {
-				console.log(childKey)
 				// for each child of the top level
 				let datapoint = {
 					name: template.scout.run.filter(r => r.key === topKey)[0].children.filter(c => c.key === childKey)[0].display ?
@@ -156,18 +187,31 @@ export function DataCard(props) {
 										Set by converting the key to a hex color code
 
 							*/}
-							{availableChildren.map(childKey => (
-								<Bar
-								key={childKey + '-bar'}
-								dataKey={childKey}
-								name={
-									template.scout.run.filter(r => r.key === topKey)[0].children.filter(c => c.key === childKey)[0].display ?
-									template.scout.run.filter(r => r.key === topKey)[0].children.filter(c => c.key === childKey)[0].display :
-									childKey
+							{availableChildren.map(childKey => {
+								if (topItem.type === 'duration') {
+									return (
+										<Bar
+										key={'Duration-bar'}
+										dataKey={'Duration'}
+										name={'Duration'}
+										fill={'#' + string2color('Duration')}
+										/>
+									)
+								} else {
+									return (
+										<Bar
+										key={childKey + '-bar'}
+										dataKey={childKey}
+										name={
+											template.scout.run.filter(r => r.key === topKey)[0].children.filter(c => c.key === childKey)[0].display ?
+											template.scout.run.filter(r => r.key === topKey)[0].children.filter(c => c.key === childKey)[0].display :
+											childKey
+										}
+										fill={'#' + string2color(childKey)}
+										/>
+									)
 								}
-								fill={'#' + string2color(childKey)}
-								/>
-							))}
+							})}
 						</BarChart>
 					:
 						<PieChart
@@ -191,11 +235,44 @@ export function DataCard(props) {
 					}
 				</ResponsiveContainer>
 				<div className={classes.listContainer}>
+					{topItem.type === 'duration' &&
+						<React.Fragment>
+							{/* Render a divider with some margin to help visually distinguish sections */}
+							<Divider style={{marginBottom: '15px'}} />
+							{/* Render a list with header set to the display name of the child of the top element that this list is for */}
+							<List className={classes.list}>
+								{/*
+									For each key of the processed objects under the child key
+									- sort them by a predetermined order
+									- then map by the keys to a switch case
+								*/}
+								{Object.keys(processedObject.data[topKey]).sort((k1, k2) => {
+									let possibilities = ['average_total_duration'];
+									let k1i = possibilities.indexOf(k1);
+									let k2i = possibilities.indexOf(k2);
+									return k1i - k2i;
+								}).map(key => {
+									// switch/case through the key to render a list item for each processed data point
+									// default to blank to ignore unknown datapoints
+									switch (key) {
+										case 'average_total_duration':
+											return (
+												<ListItem key={key}>
+													<ListItemText primary={'Average Duration: ' + Math.round(processedObject.data[topKey][key]*100)/100 + ' seconds'} />
+												</ListItem>
+											)
+										default:
+											return <React.Fragment key={key} />
+									}
+								})}
+							</List>
+						</React.Fragment>
+					}
 					{/*
 						For each of the child keys under the element in the processed object:
 							- Map to a fragment to contain a data list
 					*/}
-					{Object.keys(processedObject.data[topKey]).map(key => (
+					{topItem.type !== 'duration' && Object.keys(processedObject.data[topKey]).map(key => (
 						<React.Fragment key={key}>
 							{/* Render a divider with some margin to help visually distinguish sections */}
 							<Divider style={{marginBottom: '15px'}} />
