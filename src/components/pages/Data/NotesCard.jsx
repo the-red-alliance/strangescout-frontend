@@ -9,7 +9,7 @@ const useStyles = makeStyles(theme => ({
 	card: {
 		// fill to a max width of 500px but scale down on smaller screens
 		margin: '10px',
-		maxWidth: '500px',
+		maxWidth: '400px',
 		width: '100%',
 	},
 	// container for processed data lists
@@ -30,11 +30,11 @@ export function NotesCard(props) {
 	return (
 		<Card className={classes.card}>
 			<CardHeader title={'Notes'} />
-			<CardContent>
+			<CardContent style={{marginTop: '0px', paddingTop: '0px'}}>
 				<div className={classes.listContainer}>
 					{runs.map(run => {
-						if (run.notes) {
-							return <React.Fragment />;
+						if (!run.notes) {
+							return <React.Fragment key={run.event + run.team + run.match} />;
 						} else {
 							return (
 								<React.Fragment key={run.event + run.team + run.match}>
