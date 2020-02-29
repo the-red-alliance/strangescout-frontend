@@ -99,6 +99,7 @@ export function DataCard(props) {
 			let total = 0;
 
 			Object.keys(processedObject.data[topKey]).forEach(childKey => {
+				console.log(childKey)
 				// for each child of the top level
 				let datapoint = {
 					name: template.scout.run.filter(r => r.key === topKey)[0].children.filter(c => c.key === childKey)[0].display ?
@@ -107,13 +108,15 @@ export function DataCard(props) {
 					value: processedObject.data[topKey][childKey].average
 				};
 				data.push(datapoint);
-				total = total - processedObject.data[topKey][childKey].average;
+				total = total + processedObject.data[topKey][childKey].average;
 			});
 
-			data.push({
-				name: 'None',
-				value: 1 - total
-			});
+			if (total < 1) {
+				data.push({
+					name: 'None',
+					value: 1 - total
+				});
+			}
 		}
 	}
 

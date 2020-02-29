@@ -7,15 +7,14 @@ export function Heatmap(props) {
 	const heatmapRef = useRef();
 	const [ heatmapInstance, setHeatmapInstance ] = useState(null);
 
-	const gridSpec = {
-		width: 54,
-		height: 27,
-		scale: 2
-	};
-
 	useEffect(() => {
 		// calculate a scale ratio from the grid size to the pixel dimensions of the heatmap container element
 		// heatmapRef.current is the dom node of the ref, offsetWidth/Height are dimensions of the node
+		const gridSpec = {
+			width: 54,
+			height: 27,
+			scale: 2
+		};
 		const scales = {
 			xScale: heatmapRef.current.offsetWidth / gridSpec.width,
 			yScale: heatmapRef.current.offsetHeight / gridSpec.height
@@ -68,7 +67,7 @@ export function Heatmap(props) {
 			});
 		}
 
-	}, [gridSpec, data]);
+	}, [data, heatmapInstance]);
 
 	return (
 		<div id="heatmap" ref={heatmapRef}>

@@ -70,7 +70,8 @@ function DataContainer(props) {
 			}
 		} else {
 			setRuns([]);
-			setProcessedTeam({});
+			//setProcessedTeam({});
+			setProcessedTeam(JSON.parse('{"event":"2020ncwak","notes":[],"_id":"5e5a8eba5860570007030067","team":5511,"matches":1,"data":{"start_hang":{"successful_hang":{"average":0.25,"average_duration":20},"failed_hang":{"average":0.5,"average_duration":20}}},"updated":"2020-02-29T16:18:02.736Z","__v":0}'))
 			setPit({});
 			setMotionworks([]);
 		}
