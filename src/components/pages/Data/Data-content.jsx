@@ -7,6 +7,7 @@ import { Selector } from './Selector.jsx';
 import { DataCard } from './DataCard.jsx';
 import { PitCard } from './PitCard.jsx';
 import { HeatmapCard } from './HeatmapCard.jsx';
+import { NotesCard } from './NotesCard.jsx';
 
 const useStyles = makeStyles(theme => ({
 	root: {
@@ -38,6 +39,10 @@ export function DataContent(props) {
 				
 				{ currentEvent.teams.length > 1 &&
 					<PitCard template={template} event={selection.event} team={selection.team} submit={updatePit} readPit={pit} />
+				}
+				
+				{(runs && runs.length > 0) &&
+					<NotesCard runs={runs} />
 				}
 
 				{/* if an object matches the selection AND that object has a dataset */}
