@@ -62,11 +62,7 @@ function DataContainer(props) {
 								setRuns(newRuns);
 								setProcessedTeam(newProcessed[0]);
 								setPit(newTeams[0]);
-								let newMotionworks = [];
-								newMotionworks.forEach(motion => {
-									if (motion.positions) newMotionworks.concat(motion.positions);
-								});
-								setMotionworks(newMotionworks);
+								setMotionworks(readMotionworks.map(motion => motion.positions).flat());
 							});
 						});
 					});

@@ -35,7 +35,7 @@ const versions = [
 			teamQueue: '++localId, event, team',
 			events: '&_id, key, startDate, updated',
 			matches: '&_id, match, event, updated',
-			motionworks: '&_id, event, team, match, updated'
+			motionworks: '&_id, event, team, match, alliance, updated'
 		},
 	},
 ];
@@ -46,7 +46,8 @@ export const readableTables = {
 	PROCESSED_TEAMS: 'processedTeams',
 	TEAMS: 'teams',
 	EVENTS: 'events',
-	MOTIONWORKS: 'motionworks'
+	MOTIONWORKS: 'motionworks',
+	MATCHES: 'matches'
 };
 // Readable tables fetch URLs
 export const readableBaseURLs = new Map([
@@ -54,7 +55,8 @@ export const readableBaseURLs = new Map([
 	[ readableTables.PROCESSED_TEAMS, window.origin + '/api/processedTeams' ],
 	[ readableTables.TEAMS, window.origin + '/api/teams' ],
 	[ readableTables.EVENTS, window.origin + '/api/events' ],
-	[ readableTables.MOTIONWORKS, window.origin + '/api/motionworks' ]
+	[ readableTables.MOTIONWORKS, window.origin + '/api/motionworks' ],
+	[ readableTables.MATCHES, window.origin + '/api/matches' ]
 ]);
 
 // Queues enum
@@ -109,6 +111,7 @@ export const queryDB = (selectedTable, query) => new Promise((resolve, reject) =
 		case readableTables.TEAMS:
 		case readableTables.MOTIONWORKS:
 		case readableTables.EVENTS:
+		case readableTables.MATCHES:
 			// if we've selected a valid table
 			// if a query IS defined
 			if (query) {
@@ -185,6 +188,7 @@ export const mostRecent = (selectedTable) => new Promise((resolve, reject) => {
 		case readableTables.TEAMS:
 		case readableTables.MOTIONWORKS:
 		case readableTables.EVENTS:
+		case readableTables.MATCHES:
 			// if we've selected a table that supports the updated field
 			// (currently all readable tables)
 			
@@ -334,6 +338,7 @@ export const fetchUpdates = (selectedTable, token) => new Promise((resolve, reje
 		case readableTables.TEAMS:
 		case readableTables.MOTIONWORKS:
 		case readableTables.EVENTS:
+		case readableTables.MATCHES:
 			mostRecent(selectedTable).then(updatedDate => {
 				let url = readableBaseURLs.get(selectedTable);
 				if (updatedDate) url = url + '?updated=' + JSON.stringify(updatedDate);
@@ -447,7 +452,7 @@ export const fetchDeletes = (selectedTable, token) => new Promise((resolve, reje
  * @param {string} token the user's JWT token
  */
 export const fetchFieldImg = (token) => new Promise((resolve, reject) => {
-	get(window.origin + 'api/field.png', token, null, 'blob').then(xhr => {
+	get(window.origin + '/api/field', token, [], 'blob').then(xhr => {
 		if (xhr.status === 200) {
 			let reader = new FileReader();
 			reader.onloadend = () => {

@@ -10,7 +10,7 @@ const useStyles = makeStyles(theme => ({
 	card: {
 		// fill to a max width of 500px but scale down on smaller screens
 		margin: '10px',
-		maxWidth: '500px',
+		maxWidth: '600px',
 		width: '100%',
 	},
 	// container for processed data lists
