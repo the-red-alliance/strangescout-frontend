@@ -17,7 +17,7 @@ import React, { useState } from 'react';
 
 import { makeStyles } from '@material-ui/core/styles';
 import { Card, CardContent, CardHeader, CardActions, Button } from '@material-ui/core';
-import { FormControl, FormControlLabel, FormHelperText, InputLabel, Select, MenuItem, Input, Checkbox } from '@material-ui/core';
+import { FormControl, FormControlLabel, FormHelperText, InputLabel, Select, MenuItem, Input, Checkbox, TextField } from '@material-ui/core';
 
 // create form validators from the template
 import formValidator from '../../../utils/formValidator.js';
@@ -60,6 +60,22 @@ const useStyles = makeStyles(theme => ({
 	spacer: {
 		flexGrow: 1
 	},
+	container: {
+		width: "100%",
+		display: "grid",
+		gridTemplateColumns: "1fr",
+		gridTemplateRows: props => {
+			let newRows = '';
+			console.log(newRows)
+			for (let i = 0; i < props.template.scout.pit.length; i++) {
+				newRows = newRows + "1fr ";
+			}
+			newRows = newRows + "2.5fr"
+			console.log(newRows)
+			return newRows;
+		},
+		gridGap: "20px",
+	}
 }));
 
 export function PitCard(props) {
@@ -79,6 +95,7 @@ export function PitCard(props) {
 		} else if (value.type === 'number') {
 			initialState[value.key] = '';
 		}
+		initialState.notes = '';
 	});
 	// set our data state
 	const [ state, setState ] = useState(initialState);
@@ -147,7 +164,7 @@ export function PitCard(props) {
 												{value.name}
 											</InputLabel>
 											<Select
-											labelId={value.key + '-label' /* link to the label via it's id */}
+											labelid={value.key + '-label' /* link to the label via it's id */}
 											id={value.key + '-select'}
 											value={state[value.key] ? state[value.key] : ''}
 											onChange={handleChange(value.key)}
@@ -166,6 +183,11 @@ export function PitCard(props) {
 											<Input
 											id={value.key}
 											type='number'
+											inputProps={{
+												inputMode: "numeric",
+												pattern: "[0-9]*",
+												min: 0,
+											}}
 											value={state[value.key]}
 											onChange={handleChange(value.key)}
 											/>
@@ -197,6 +219,26 @@ export function PitCard(props) {
 							}
 						</FormControl>
 					))}
+					<FormControl
+					style={{
+						display: 'flex',
+						gridColumn: '1 / 2',
+						// determine the row based on the item index
+						gridRow: (template.scout.pit.length + 1) + " / " + (template.scout.pit.length + 2),
+					}}
+					>
+						<InputLabel id={'notes-label' /* set the label id via item key */}>
+							Notes
+						</InputLabel>
+						<TextField
+						labelid={'notes-label' /* link to the label via it's id */}
+						id={'notes-area'}
+						value={state.notes ? state.notes : ''}
+						onChange={handleChange('notes')}
+						multiline
+						rows="5"
+						/>
+					</FormControl>
 				</div>
 			</CardContent>
 			<CardActions>
