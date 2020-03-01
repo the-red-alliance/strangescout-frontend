@@ -101,9 +101,12 @@ export function DataCard(props) {
 				// load journal
 				let journal = [ ...run.journal ].filter(journalItem => ([ topItem.startKey, topItem.endKey ].includes(journalItem.event)));
 				let indexes = [];
-				if (journal[journal.length - 1].event === topItem.startKey){
-					journal.push({event: topItem.endKey, time: template.gameInfo.duration});
+				if (journal.length > 0) {
+					if (journal[journal.length - 1].event === topItem.startKey){
+						journal.push({event: topItem.endKey, time: template.gameInfo.duration});
+					}
 				}
+				
 				// for each journal event
 				journal.forEach((value, index) => {
 					// if the journal event matches the current child we're tracking

@@ -187,7 +187,7 @@ function DataContainer(props) {
 		}
 	}
 
-	if (!loaded) return <React.Fragment />;
+	if (!loaded || Object.keys(template).length < 1) return <React.Fragment />;
 
 	if (events.length < 1) return <NoEvents />;
 
