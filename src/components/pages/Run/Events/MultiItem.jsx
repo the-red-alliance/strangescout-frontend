@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 
-import { Dialog, DialogContent } from '@material-ui/core';
+import { Dialog, DialogContent, Typography } from '@material-ui/core';
 import { Button } from '@material-ui/core';
 import { Line } from 'rc-progress';
 
@@ -21,7 +21,7 @@ const useStyles = makeStyles(theme => ({
 		gridTemplateRows: props => {
 			// by default we need three rows
 			// get event, hold, and undo
-			let rows = "1fr 1fr 1fr 1fr";
+			let rows = "1.65fr 1fr 1fr 1fr";
 			for (let i = 0; i < props.children.length; i++) {
 				rows = rows + " 1fr";
 			};
@@ -60,7 +60,12 @@ function ChildDialog(props) {
 					}}
 					>
 						<div className={classes.progressContainer}>
-							<Line percent={(held / event.max) * 100} strokeWidth="4" />
+							<div>
+								<Line percent={(held / event.max) * 100} strokeWidth="4" />
+							</div>
+							<div style={{textAlign: 'center', marginTop: 5}}>
+								<Typography>Holding {held} of {event.max}</Typography>
+							</div>
 						</div>
 					</div>
 					<div

@@ -75,7 +75,11 @@ export function SetupDialog(props) {
 	const { events, open, template, startMatchAction, runState, setRunState } = props;
 
 	const currentEvent = () => {
-		return events.filter(event => ( event.startDate < Date.now() && event.endDate > Date.now() ))[0];
+		events.forEach(event => {
+
+		console.log(event.startDate, event.endDate)
+		})
+		return events.filter(event => ( event.startDate < Date.now() < event.endDate ))[0];
 	};
 
 	// setup state
@@ -155,7 +159,7 @@ export function SetupDialog(props) {
 						gridColumn: "1 / 2",
 						gridRow: "2 / 3",
 					}}>
-						<InputLabel id='team-label'>Team</InputLabel>
+						<InputLabel id='team-label'>Team Number</InputLabel>
 						{(selectedEvent && selectedEvent.teams && selectedEvent.teams.length > 0) ?
 							<Select
 							labelid="team-label"
@@ -174,6 +178,11 @@ export function SetupDialog(props) {
 							id="team"
 							labelid='team-label'
 							type="number"
+							inputProps={{
+								inputMode: "numeric",
+								pattern: "[0-9]*",
+								min: 0,
+							}}
 							value={state.team}
 							onChange={handleChange('team')}
 							/>
@@ -188,11 +197,15 @@ export function SetupDialog(props) {
 						gridColumn: "1 / 2",
 						gridRow: "3 / 4",
 					}}>
-						<InputLabel>Match</InputLabel>
+						<InputLabel>Match Number</InputLabel>
 						<Input
 						id="match"
 						type="number"
-						min="0"
+						inputProps={{
+							inputMode: "numeric",
+							pattern: "[0-9]*",
+							min: 0,
+						}}
 						value={state.match}
 						onChange={handleChange('match')}
 						/>

@@ -63,13 +63,18 @@ export function RunContainer(props) {
 	if (process.env.NODE_ENV === 'production' && !user.loggedin) return <Redirect to={"/login"} />;
 
 	if (!loaded) {
-		queryDB(readableTables.EVENTS).then(newEvents => {
-			setEvents(newEvents);
+		if (process.env.NODE_ENV === 'production') {
+			queryDB(readableTables.EVENTS).then(newEvents => {
+				setEvents(newEvents);
+				setLoaded(true);
+			}, e => {
+				console.error('Error reading events: ', e);
+				setLoaded(true);
+			});
+		} else {
+			setEvents([JSON.parse('{"matches":[],"teams":[435,2059,2642,3229,3459,4291,4561,4816,4828,5160,5190,5511,5518,5607,5762,5919,6004,6240,6496,6500,6502,6565,6908,7265,7463,7671,7763,7890,8090],"_id":"5e5a7a499e3a2100074cdbfa","city":"Holly Springs","country":"USA","district":{"abbreviation":"fnc","display_name":"FIRST North Carolina","key":"2020fnc","year":2020},"endDate":"2020-03-01T05:00:00.000Z","eventCode":"ncwak","key":"2020ncwak","name":"FNC District Wake County Event","startDate":"2020-02-28T05:00:00.000Z","year":2020,"updated":"2020-02-29T20:42:44.255Z","__v":0}')]);
 			setLoaded(true);
-		}, e => {
-			console.error('Error reading events: ', e);
-			setLoaded(true);
-		});
+		}
 	}
 
 	// start the match
