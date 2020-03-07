@@ -22,6 +22,33 @@ const useStyles = makeStyles(theme => ({
 	},
 }));
 
+const normalizeData = data => {
+	const fieldDimensions = {
+		width: 54,
+		height: 27,
+	};
+
+	let newData = [];
+	data.forEach(dataObj => {
+		if (dataObj.alliance === 'red') {
+			newData.push(dataObj);
+		} else {
+			let newDataObj = { ...dataObj };
+			newDataObj.positions = [];
+
+			dataObj.positions.forEach(position => {
+				let newPosition = { time: position.time };
+				newPosition.x = ((fieldDimensions.width / 2) - position.x) + fieldDimensions.width;
+				newPosition.y = ((fieldDimensions.height / 2) - position.y) + fieldDimensions.height;
+
+				newDataObj.positions.push(newPosition);
+			});
+
+			newData.push(newDataObj);
+		}
+	});
+};
+
 export function HeatmapCard(props) {
 	const { fieldImg, data } = props;
 	const classes = useStyles();
@@ -30,7 +57,7 @@ export function HeatmapCard(props) {
 		<Card className={classes.card}>
 			<CardHeader title={'Heatmap'} />
 			<CardContent>
-				<Heatmap data={data} fieldImgUrl={fieldImg} />
+				<Heatmap data={normalizeData(data)} fieldImgUrl={fieldImg} />
 			</CardContent>
 		</Card>
 	);
