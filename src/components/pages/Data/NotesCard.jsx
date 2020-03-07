@@ -25,6 +25,8 @@ export function NotesCard(props) {
 	const { runs } = props;
 	const classes = useStyles();
 
+	console.log(runs, runs.map(run => run.notes));
+
 	if (runs.map(run => run.notes).filter(el => el).length < 1) return <React.Fragment />;
 
 	return (
@@ -33,7 +35,14 @@ export function NotesCard(props) {
 			<CardContent style={{marginTop: '0px', paddingTop: '0px'}}>
 				<div className={classes.listContainer}>
 					{runs.map(run => (
-						<React.Fragment key={run.event + run.team + run.match}>
+						<React.Fragment key={Math.random()}>
+							{
+							/**
+							 * use a random key because the only rerender this will have
+							 * is on a team change and then the notes will change too
+							 * this prevents notes being rendered on a team after the selection is changed
+							 */
+							}
 							{ run.notes &&
 								<React.Fragment>
 									<Divider style={{marginBottom: '15px'}} />
