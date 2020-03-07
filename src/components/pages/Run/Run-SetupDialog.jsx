@@ -75,11 +75,14 @@ export function SetupDialog(props) {
 	const { events, open, template, startMatchAction, runState, setRunState } = props;
 
 	const currentEvent = () => {
-		events.forEach(event => {
-
-		console.log(event.startDate, event.endDate)
-		})
-		return events.filter(event => ( event.startDate < Date.now() < event.endDate ))[0];
+		// if there aren't any events quit
+		if (events.length < 1) return;
+		// get all started events
+		const startedEvents = events.filter(event => event.startDate < Date.now()).sort((a, b) => a.startDate - b.startDate);
+		// if there aren't any started events or we only have one event overall, return the first event
+		if (startedEvents.length === 0 || events.length === 1) return events[0];
+		// else return the most recent
+		return startedEvents[startedEvents.length - 1];
 	};
 
 	// setup state
