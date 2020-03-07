@@ -13,6 +13,8 @@ export function Selector(props) {
 		selectTeam(newValue);
 	};
 
+	if (!events || !teams) return <React.Fragment />;
+
 	return (
 		<AppBar position="static" color="default">
 			<Tabs

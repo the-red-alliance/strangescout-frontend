@@ -13,7 +13,7 @@
  * - generated form based on the given template to scout a pit
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { makeStyles } from '@material-ui/core/styles';
 import { Card, CardContent, CardHeader, CardActions, Button } from '@material-ui/core';
@@ -62,27 +62,13 @@ const useStyles = makeStyles(theme => ({
 	},
 	container: {
 		width: "100%",
-		display: "grid",
-		gridTemplateColumns: "1fr",
-		gridTemplateRows: props => {
-			let newRows = '';
-			for (let i = 0; i < props.template.scout.pit.length; i++) {
-				newRows = newRows + "1fr ";
-			}
-			newRows = newRows + "2.5fr"
-			return newRows;
-		},
-		gridGap: "20px",
+		
 	}
 }));
 
-export function PitCard(props) {
-	const { template, event, team, readPit, submit } = props;
-	// import classes/styles
-	const classes = useStyles(props);
+const buildInitialState = (template) => {
+	let initialState = { notes: '' };
 
-	// create the initial state
-	let initialState = {};
 	template.scout.pit.forEach(value => {
 		// if it's a boolean it defaults to false in state
 		if (value.type === 'boolean') {
@@ -93,27 +79,34 @@ export function PitCard(props) {
 		} else if (value.type === 'number') {
 			initialState[value.key] = '';
 		}
-		initialState.notes = '';
 	});
+
+	return initialState;
+};
+
+export function PitCard(props) {
+	const { template, event, team, readPit, submit } = props;
+	// import classes/styles
+	const classes = useStyles(props);
+	
 	// set our data state
-	const [ state, setState ] = useState(initialState);
+	const [ state, setState ] = useState(buildInitialState(template));
 	// set a blank state to keep track of touched fields
 	const [ touched, setTouched ] = useState({});
-	const [ currentTeam, setCurrentTeam ] = useState(0);
+
+	// update the form state if the passed readPit is changed
+	useEffect(() => {
+		if (readPit) {
+			setState({ ...readPit.data });
+		} else {
+			setState(buildInitialState(template));
+		}
+	}, [ readPit, template ]);
 
 	if (Object.keys(template).length < 1) return <React.Fragment />;
 
 	// create our validation object from the data validator
 	const validation = createValidator(template).validate(state);
-
-	if (team !== currentTeam) {
-		if (readPit) {
-			setState({ ...readPit.data });
-		} else {
-			setState(initialState);
-		}
-		setCurrentTeam(team);
-	}
 
 	// handle data changes
 	const handleChange = prop => event => {
@@ -138,7 +131,7 @@ export function PitCard(props) {
 
 	return (
 		<Card className={classes.card}>
-			<CardHeader title={'Team ' + team} />
+			<CardHeader style={{ paddingBottom: '5px' }} title={'Team ' + team} />
 			<CardContent>
 				<div className={classes.container}>
 					{/* map the pit scout items (for each) */}
@@ -147,9 +140,7 @@ export function PitCard(props) {
 						key={value.key /* when mapping each child must have a key that acts as an item id for react */}
 						style={{
 							display: 'flex',
-							gridColumn: '1 / 2',
-							// determine the row based on the item index
-							gridRow: (i + 1) + " / " + (i + 2),
+							margin: '0px 0px 15px 0px'
 						}}
 						>
 							{/* switch via the item type key */}
@@ -220,21 +211,16 @@ export function PitCard(props) {
 					<FormControl
 					style={{
 						display: 'flex',
-						gridColumn: '1 / 2',
-						// determine the row based on the item index
-						gridRow: (template.scout.pit.length + 1) + " / " + (template.scout.pit.length + 2),
 					}}
 					>
-						<InputLabel id={'notes-label' /* set the label id via item key */}>
-							Notes
-						</InputLabel>
 						<TextField
-						labelid={'notes-label' /* link to the label via it's id */}
+						label="Notes"
 						id={'notes-area'}
 						value={state.notes ? state.notes : ''}
 						onChange={handleChange('notes')}
 						multiline
-						rows="5"
+						rows="4"
+						margin="normal"
 						/>
 					</FormControl>
 				</div>
