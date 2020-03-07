@@ -50,6 +50,11 @@ const versions = [
 			matches: '&_id, match, event, updated',
 			motionworks: '&_id, event, team, match, alliance, updated'
 		},
+		upgrade: transition => {
+			return transition.table('runs').toCollection().modify(run => {
+				if (!run.ignore) run.ignore = false;
+			});
+		}
 	},
 ];
 
@@ -113,7 +118,11 @@ export const queryDB = (selectedTable, query) => new Promise((resolve, reject) =
 	// load databases
 	const db = new Dexie('strangescout');
 	versions.forEach(version => {
-		db.version(version.version).stores(version.stores);
+		if (version.upgrade) {
+			db.version(version.version).stores(version.stores).upgrade(version.upgrade);
+		} else {
+			db.version(version.version).stores(version.stores);
+		}
 	});
 
 	// switch through the selected table
@@ -190,7 +199,11 @@ export const mostRecent = (selectedTable) => new Promise((resolve, reject) => {
 	// load databases
 	const db = new Dexie('strangescout');
 	versions.forEach(version => {
-		db.version(version.version).stores(version.stores);
+		if (version.upgrade) {
+			db.version(version.version).stores(version.stores).upgrade(version.upgrade);
+		} else {
+			db.version(version.version).stores(version.stores);
+		}
 	});
 
 	// switch through the selected table
@@ -241,7 +254,11 @@ export const addToQueue = (selectedQueue, doc) => new Promise((resolve, reject) 
 	// load database versions
 	const db = new Dexie('strangescout');
 	versions.forEach(version => {
-		db.version(version.version).stores(version.stores);
+		if (version.upgrade) {
+			db.version(version.version).stores(version.stores).upgrade(version.upgrade);
+		} else {
+			db.version(version.version).stores(version.stores);
+		}
 	});
 
 	// switch through the selected queue table
@@ -280,7 +297,11 @@ export const pushQueue = (selectedQueue, token) => new Promise((resolve, reject)
 	// load database versions
 	const db = new Dexie('strangescout');
 	versions.forEach(version => {
-		db.version(version.version).stores(version.stores);
+		if (version.upgrade) {
+			db.version(version.version).stores(version.stores).upgrade(version.upgrade);
+		} else {
+			db.version(version.version).stores(version.stores);
+		}
 	});
 	
 	// switch through the selected queue table
@@ -340,7 +361,11 @@ export const fetchUpdates = (selectedTable, token) => new Promise((resolve, reje
 	// load database versions
 	const db = new Dexie('strangescout');
 	versions.forEach(version => {
-		db.version(version.version).stores(version.stores);
+		if (version.upgrade) {
+			db.version(version.version).stores(version.stores).upgrade(version.upgrade);
+		} else {
+			db.version(version.version).stores(version.stores);
+		}
 	});
 
 	// switch through the selected table
@@ -397,7 +422,11 @@ export const fetchDeletes = (selectedTable, token) => new Promise((resolve, reje
 	// load database versions
 	const db = new Dexie('strangescout');
 	versions.forEach(version => {
-		db.version(version.version).stores(version.stores);
+		if (version.upgrade) {
+			db.version(version.version).stores(version.stores).upgrade(version.upgrade);
+		} else {
+			db.version(version.version).stores(version.stores);
+		}
 	});
 
 	// switch through the selected table
