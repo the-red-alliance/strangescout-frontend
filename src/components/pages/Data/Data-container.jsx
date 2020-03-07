@@ -4,6 +4,7 @@ import { Redirect } from 'react-router-dom';
 
 import { makeStyles } from '@material-ui/core/styles';
 
+import { Selector } from './Selector.jsx';
 import { DataContent } from './Data-content.jsx';
 
 import { sync, addToQueue, queueTables, queryDB, readableTables } from '../../../utils/storage';
@@ -16,6 +17,9 @@ const useStyles = makeStyles(theme => ({
 		// center everything
 		display: 'flex',
 		justifyContent: 'center',
+	},
+	selectorContainer: {
+		width: '100%',
 	},
 	content: {
 		// set the content width so we have some padding
@@ -194,24 +198,31 @@ function DataContainer(props) {
 	return (
 		<div className={classes.root}>
 			{true &&
-				<DataContent
-				template={template}
-				events={events}
+				<div className={classes.selectorContainer}>
+					<Selector
+					events={events}
+					selection={selection}
+					selectEvent={selectEvent}
+					selectTeam={selectTeam}
+					teams={selectedEvent.teams}
+					/>
 
-				processedTeam={processedTeam}
-				runs={runs.sort((a, b) => a.match - b.match)}
-				motionworks={motionworks}
-				pit={pit}
-
-				updatePit={updatePit}
-				selectEvent={selectEvent}
-				selectTeam={selectTeam}
-
-				selection={selection}
-				currentEvent={selectedEvent}
-
-				fieldImg={fieldImg}
-				/>
+					<DataContent
+					template={template}
+				
+					processedTeam={processedTeam}
+					runs={runs.sort((a, b) => a.match - b.match)}
+					motionworks={motionworks}
+					pit={pit}
+				
+					updatePit={updatePit}
+				
+					selection={selection}
+					currentEvent={selectedEvent}
+				
+					fieldImg={fieldImg}
+					/>
+				</div>
 			}
 		</div>
 	);

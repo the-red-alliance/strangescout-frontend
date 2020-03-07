@@ -41,7 +41,7 @@ const createValidator = (template) => {
 			// apply this validator
 			newValidators.push({
 				field: element.key,
-				method: 'isInt',
+				method: 'isFloat',
 				validWhen: true,
 				message: element.name + ' must be a number'
 			});
@@ -66,12 +66,10 @@ const useStyles = makeStyles(theme => ({
 		gridTemplateColumns: "1fr",
 		gridTemplateRows: props => {
 			let newRows = '';
-			console.log(newRows)
 			for (let i = 0; i < props.template.scout.pit.length; i++) {
 				newRows = newRows + "1fr ";
 			}
 			newRows = newRows + "2.5fr"
-			console.log(newRows)
 			return newRows;
 		},
 		gridGap: "20px",
@@ -125,7 +123,7 @@ export function PitCard(props) {
 		// if the item is a number
 		if (event.target.type === 'number') {
 			// if there is a value, parse it to an int, else return a blank string
-			newvalue = Boolean(event.target.value) ? parseInt(event.target.value) : '';
+			newvalue = Boolean(event.target.value) ? parseFloat(event.target.value) : '';
 		// else if it's a checkbox
 		} else if (event.target.type === 'checkbox') {
 			// use the checked key instead of value
@@ -184,7 +182,7 @@ export function PitCard(props) {
 											id={value.key}
 											type='number'
 											inputProps={{
-												inputMode: "numeric",
+												inputMode: "decimal",
 												pattern: "[0-9]*",
 												min: 0,
 											}}
