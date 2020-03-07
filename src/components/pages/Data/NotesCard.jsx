@@ -35,7 +35,7 @@ export function NotesCard(props) {
 			<CardContent style={{marginTop: '0px', paddingTop: '0px'}}>
 				<div className={classes.listContainer}>
 					{runs.map(run => (
-						<React.Fragment key={run.event + run.team + run.match}>
+						<React.Fragment key={Math.random()}>
 							{ run.notes &&
 								<React.Fragment>
 									<Divider style={{marginBottom: '15px'}} />
