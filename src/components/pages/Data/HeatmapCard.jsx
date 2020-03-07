@@ -38,8 +38,8 @@ const normalizeData = data => {
 
 			dataObj.positions.forEach(position => {
 				let newPosition = { time: position.time };
-				newPosition.x = ((fieldDimensions.width / 2) - position.x) + fieldDimensions.width;
-				newPosition.y = ((fieldDimensions.height / 2) - position.y) + fieldDimensions.height;
+				newPosition.x = ((fieldDimensions.width / 2) - position.x) + (fieldDimensions.width / 2);
+				newPosition.y = ((fieldDimensions.height / 2) - position.y) + (fieldDimensions.height / 2);
 
 				newDataObj.positions.push(newPosition);
 			});
@@ -47,7 +47,7 @@ const normalizeData = data => {
 			newData.push(newDataObj);
 		}
 	});
-
+	console.log(data, newData)
 	return newData.map(motion => motion.positions).flat();
 };
 
