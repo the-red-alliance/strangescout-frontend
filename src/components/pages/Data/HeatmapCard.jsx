@@ -47,6 +47,8 @@ const normalizeData = data => {
 			newData.push(newDataObj);
 		}
 	});
+
+	return data.map(motion => motion.positions).flat();
 };
 
 export function HeatmapCard(props) {
