@@ -66,7 +66,7 @@ function DataContainer(props) {
 								setRuns(newRuns);
 								setProcessedTeam(newProcessed[0]);
 								setPit(newTeams[0]);
-								setMotionworks(readMotionworks.map(motion => motion.positions).flat());
+								setMotionworks(readMotionworks);
 							});
 						});
 					});
