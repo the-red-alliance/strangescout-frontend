@@ -349,20 +349,12 @@ export const fetchUpdates = (selectedTable, token) => new Promise((resolve, reje
 					[{name: 'Content-type', value: 'application/json'}]
 				).then(result => {
 					if (result.status === 200) {
-						let docs;
 						try {
-							docs = JSON.parse(result.response, dateParser);
-	
-							try {
-								db[selectedTable].bulkPut(docs);
-								resolve();
-							} catch (e) {
-								console.error('failed to save docs to ' + selectedTable, e);
-								reject('failed to save');
-							}
+							db[selectedTable].bulkPut(JSON.parse(result.response, dateParser));
+							resolve();
 						} catch (e) {
-							console.error('failed to parse docs for ' + selectedTable, e);
-							reject('failed to parse');
+							console.error('failed to save docs to ' + selectedTable, e);
+							reject('failed to save');
 						}
 					} else {
 						console.error('failed to GET from server', result);

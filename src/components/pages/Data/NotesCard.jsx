@@ -32,12 +32,10 @@ export function NotesCard(props) {
 			<CardHeader title={'Notes'} />
 			<CardContent style={{marginTop: '0px', paddingTop: '0px'}}>
 				<div className={classes.listContainer}>
-					{runs.map(run => {
-						if (!run.notes) {
-							return <React.Fragment key={run.event + run.team + run.match} />;
-						} else {
-							return (
-								<React.Fragment key={run.event + run.team + run.match}>
+					{runs.map(run => (
+						<React.Fragment key={run.event + run.team + run.match}>
+							{ run.notes &&
+								<React.Fragment>
 									<Divider style={{marginBottom: '15px'}} />
 									<List subheader={<Typography>{'Match ' + run.match}</Typography>}>
 										<ListItem>
@@ -45,9 +43,9 @@ export function NotesCard(props) {
 										</ListItem>
 									</List>
 								</React.Fragment>
-							)
-						}
-					})}
+							}
+						</React.Fragment>
+					))}
 				</div>
 			</CardContent>
 		</Card>
