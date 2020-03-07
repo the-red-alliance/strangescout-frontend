@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { makeStyles } from '@material-ui/core/styles';
-import { Card, CardContent, CardHeader } from '@material-ui/core';
+import { Card, CardContent, CardHeader, Typography } from '@material-ui/core';
 
 import { Heatmap } from '../../Heatmap.jsx';
 
@@ -22,15 +22,47 @@ const useStyles = makeStyles(theme => ({
 	},
 }));
 
+const normalizeData = data => {
+	const fieldDimensions = {
+		width: 54,
+		height: 27,
+	};
+
+	let newData = [];
+	data.forEach(dataObj => {
+		if (dataObj.alliance === 'red') {
+			newData.push(dataObj);
+		} else {
+			let newDataObj = { ...dataObj };
+			newDataObj.positions = [];
+
+			dataObj.positions.forEach(position => {
+				let newPosition = { time: position.time };
+				newPosition.x = ((fieldDimensions.width / 2) - position.x) + (fieldDimensions.width / 2);
+				newPosition.y = ((fieldDimensions.height / 2) - position.y) + (fieldDimensions.height / 2);
+
+				newDataObj.positions.push(newPosition);
+			});
+
+			newData.push(newDataObj);
+		}
+	});
+	console.log(data, newData)
+	return newData.map(motion => motion.positions).flat();
+};
+
 export function HeatmapCard(props) {
 	const { fieldImg, data } = props;
 	const classes = useStyles();
 
 	return (
 		<Card className={classes.card}>
-			<CardHeader title={'Heatmap'} />
+			<CardHeader style={{ paddingBottom: '0px' }} title={'Heatmap'} />
 			<CardContent>
-				<Heatmap data={data} fieldImgUrl={fieldImg} />
+				<Typography style={{ marginBottom: '10px' }}>
+					(Normalized to the red alliance)
+				</Typography>
+				<Heatmap data={normalizeData(data)} fieldImgUrl={fieldImg} />
 			</CardContent>
 		</Card>
 	);
