@@ -25,8 +25,6 @@ export function NotesCard(props) {
 	const { runs } = props;
 	const classes = useStyles();
 
-	console.log(runs, runs.map(run => run.notes));
-
 	if (runs.map(run => run.notes).filter(el => el).length < 1) return <React.Fragment />;
 
 	return (
