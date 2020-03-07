@@ -38,6 +38,19 @@ const versions = [
 			motionworks: '&_id, event, team, match, alliance, updated'
 		},
 	},
+	{
+		version: 4,
+		stores: {
+			runs: '&_id, event, team, match, ignore, updated',
+			runQueue: '++localId, event, team, match',
+			processedTeams: '&_id, event, team, matches, updated',
+			teams: '&_id, event, team, updated',
+			teamQueue: '++localId, event, team',
+			events: '&_id, key, startDate, updated',
+			matches: '&_id, match, event, updated',
+			motionworks: '&_id, event, team, match, alliance, updated'
+		},
+	},
 ];
 
 // Readable tables enum

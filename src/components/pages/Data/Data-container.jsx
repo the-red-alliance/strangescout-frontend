@@ -59,7 +59,7 @@ function DataContainer(props) {
 	useEffect(() => {
 		if (process.env.NODE_ENV === 'production') {
 			if (selection.event && selection.team) {
-				queryDB(readableTables.RUNS, { event: selection.event, team: selection.team }).then(newRuns => {
+				queryDB(readableTables.RUNS, { event: selection.event, team: selection.team, ignore: false }).then(newRuns => {
 					queryDB(readableTables.PROCESSED_TEAMS, { event: selection.event, team: selection.team }).then(newProcessed => {
 						queryDB(readableTables.TEAMS, { event: selection.event, team: selection.team }).then(newTeams => {
 							queryDB(readableTables.MOTIONWORKS, { event: selection.event, team: selection.team }).then(readMotionworks => {
