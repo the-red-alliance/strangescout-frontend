@@ -36,6 +36,13 @@ export function NotesCard(props) {
 				<div className={classes.listContainer}>
 					{runs.map(run => (
 						<React.Fragment key={Math.random()}>
+							{
+							/**
+							 * use a random key because the only rerender this will have
+							 * is on a team change and then the notes will change too
+							 * this prevents notes being rendered on a team after the selection is changed
+							 */
+							}
 							{ run.notes &&
 								<React.Fragment>
 									<Divider style={{marginBottom: '15px'}} />
