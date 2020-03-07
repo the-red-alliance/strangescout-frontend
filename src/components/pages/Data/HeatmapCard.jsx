@@ -57,7 +57,7 @@ export function HeatmapCard(props) {
 
 	return (
 		<Card className={classes.card}>
-			<CardHeader title={'Heatmap'} />
+			<CardHeader style={{ paddingBottom: '0px' }} title={'Heatmap'} />
 			<CardContent>
 				<Typography style={{ marginBottom: '10px' }}>
 					(Normalized to the red alliance)
