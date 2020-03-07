@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { makeStyles } from '@material-ui/core/styles';
-import { Card, CardContent, CardHeader } from '@material-ui/core';
+import { Card, CardContent, CardHeader, Typography } from '@material-ui/core';
 
 import { Heatmap } from '../../Heatmap.jsx';
 
@@ -59,6 +59,9 @@ export function HeatmapCard(props) {
 		<Card className={classes.card}>
 			<CardHeader title={'Heatmap'} />
 			<CardContent>
+				<Typography style={{ marginBottom: '10px' }}>
+					(Normalized to the red alliance)
+				</Typography>
 				<Heatmap data={normalizeData(data)} fieldImgUrl={fieldImg} />
 			</CardContent>
 		</Card>
