@@ -38,6 +38,7 @@ export function Selector(props) {
 				variant="scrollable"
 				scrollButtons="auto"
 				>
+					<Tab label={'All'} value={'all'} />
 					{teams.sort((a, b) => a - b).map(team => (
 						<Tab key={team} label={team} value={team} />
 					))}

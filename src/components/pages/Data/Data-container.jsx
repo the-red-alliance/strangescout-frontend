@@ -148,6 +148,10 @@ function DataContainer(props) {
 	 * @param {number} team the team number
 	 */
 	const selectTeam = (team) => {
+		if (team === 'all') {
+			setSelection({ ...selection, team: team });
+			return;
+		}
 		// if the current event has this team, set it, else default to the first team in the event
 		const newTeam = selectedEvent.teams.includes(team) ? team : selectEvent.teams[0];
 		if (!selectedEvent.teams.includes(team)) console.warn('current event doesn\'t have team ' + team + '\nDefaulting to team ' + newTeam);

@@ -47,7 +47,7 @@ const normalizeData = data => {
 			newData.push(newDataObj);
 		}
 	});
-	console.log(data, newData)
+	
 	return newData.map(motion => motion.positions).flat();
 };
 
